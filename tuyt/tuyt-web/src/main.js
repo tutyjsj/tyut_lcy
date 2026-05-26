@@ -1,0 +1,34 @@
+import { createApp } from 'vue'
+import { createPinia } from 'pinia'
+
+import App from './App.vue'
+import router from './router'
+import './styles/global.scss'
+
+// 按需注册项目中实际使用的 Element Plus 图标（避免全量注册 287 个图标）
+import {
+  Monitor, Fold, Expand, UserFilled, ArrowDown, SwitchButton,
+  List, Grid, Folder, WarningFilled, Odometer, Document,
+  Trophy, Setting, MapLocation, ZoomIn, ZoomOut, FullScreen,
+  User, Lock
+} from '@element-plus/icons-vue'
+
+const icons = {
+  Monitor, Fold, Expand, UserFilled, ArrowDown, SwitchButton,
+  List, Grid, Folder, WarningFilled, Odometer, Document,
+  Trophy, Setting, MapLocation, ZoomIn, ZoomOut, FullScreen,
+  User, Lock
+}
+
+const app = createApp(App)
+
+for (const [key, component] of Object.entries(icons)) {
+  app.component(key, component)
+}
+
+app.use(createPinia())
+app.use(router)
+// Element Plus 组件和样式由 unplugin-vue-components + ElementPlusResolver 按需自动导入
+// 中文语言包通过 App.vue 中的 ElConfigProvider 全局配置
+
+app.mount('#app')

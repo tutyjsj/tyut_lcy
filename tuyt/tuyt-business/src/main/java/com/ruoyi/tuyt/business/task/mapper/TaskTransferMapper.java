@@ -1,0 +1,9 @@
+package com.ruoyi.tuyt.business.task.mapper;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.ruoyi.tuyt.business.task.entity.TaskTransfer;
+import org.apache.ibatis.annotations.Mapper;
+
+@Mapper
+public interface TaskTransferMapper extends BaseMapper<TaskTransfer> {
+}
