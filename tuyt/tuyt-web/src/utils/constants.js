@@ -24,6 +24,7 @@ export const pollutionTypeMap = {
 // 问题处理状态
 export const handleStatusMap = {
   PENDING: '待处理',
+  PROCESSING: '处理中',
   PROCESSED: '已处理',
   DONE: '处理完成',
   CLOSED: '已关闭',
@@ -33,6 +34,7 @@ export const handleStatusMap = {
 // 问题处理状态对应的 tag 类型
 export const handleStatusTagType = {
   PENDING: 'warning',
+  PROCESSING: 'primary',
   PROCESSED: 'primary',
   DONE: 'success',
   CLOSED: 'info',

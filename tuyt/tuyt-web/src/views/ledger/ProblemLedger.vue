@@ -118,8 +118,8 @@
             </el-descriptions-item>
             <el-descriptions-item label="报警时间">{{ currentProblem.alarmTime }}</el-descriptions-item>
             <el-descriptions-item label="问题来源">{{ problemSourceMap[currentProblem.problemSource] || currentProblem.problemSource }}</el-descriptions-item>
-            <el-descriptions-item label="问题类型">{{ currentProblem.problemType }}</el-descriptions-item>
-            <el-descriptions-item label="污染类型">{{ currentProblem.pollutionType }}</el-descriptions-item>
+            <el-descriptions-item label="问题类型">{{ problemTypeMap[currentProblem.problemType] || currentProblem.problemType || '-' }}</el-descriptions-item>
+            <el-descriptions-item label="污染类型">{{ pollutionName(currentProblem.pollutionType) }}</el-descriptions-item>
             <el-descriptions-item label="事发企业">{{ currentProblem.enterpriseName || '-' }}</el-descriptions-item>
             <el-descriptions-item label="事发地址">{{ currentProblem.address || '-' }}</el-descriptions-item>
             <el-descriptions-item label="所属区域">{{ currentProblem.areaName || '-' }}</el-descriptions-item>
@@ -182,7 +182,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getProblemList, getProblemDetail, updateProblem, closeProblem, getProblemLogs, exportProblemLedger, getEnterpriseList } from '@/api'
-import { problemLevelMap, pollutionTypeOptions, problemSourceMap, problemSourceOptions, handleStatusMap, handleStatusTagType } from '@/utils/constants'
+import { problemLevelMap, pollutionTypeOptions, pollutionTypeMap, problemTypeMap, problemSourceMap, problemSourceOptions, handleStatusMap, handleStatusTagType } from '@/utils/constants'
 
 const loading = ref(false), list = ref([]), total = ref(0), submitting = ref(false)
 const tableRef = ref(null), selectedIds = ref([])
@@ -312,6 +312,14 @@ const logTypeLabel = (type) => {
 const logTypeColor = (type) => {
   const m = { warn: '#E6A23C', update: '#409EFF', dispatch: '#67C23A', process: '#409EFF', close: '#909399', merge: '#F56C6C' }
   return m[type] || '#909399'
+}
+
+// 污染类型显示名称
+const pollutionName = (val) => {
+  if (!val) return '-'
+  const option = pollutionTypeOptions.find(o => o.value === val)
+  if (option) return option.label
+  return pollutionTypeMap[val] || val
 }
 
 onMounted(search)

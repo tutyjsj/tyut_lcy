@@ -104,12 +104,16 @@ public class ConfigController {
         return R.ok(contactService.queryPage(keyword, contactType, pageNum, pageSize));
     }
 
-    @Operation(summary = "新增联系人")
+    @Operation(summary = "新增/编辑联系人")
     @PostMapping("/contacts")
     public R<Void> addContact(@RequestBody Contact contact) {
-        contactService.add(contact);
+        if (contact.getId() != null) {
+            contactService.update(contact);
+        } else {
+            contactService.add(contact);
+        }
         R<Void> r = R.ok();
-        r.setMessage("新增联系人成功");
+        r.setMessage(contact.getId() != null ? "编辑联系人成功" : "新增联系人成功");
         return r;
     }
 

@@ -11,6 +11,7 @@ import lombok.Getter;
 public enum HandleStatusEnum {
 
     PENDING("PENDING", "待处理"),
+    PROCESSING("PROCESSING", "处理中"),
     PROCESSED("PROCESSED", "已处理"),
     DONE("DONE", "处理完成"),
     CLOSED("CLOSED", "已关闭"),
