@@ -174,7 +174,7 @@ const fetchRules = async () => {
   try {
     const r = await getAssessRuleList({ pageNum: rulePageNum.value, pageSize: rulePageSize.value })
     ruleList.value = r.data?.records || []
-    ruleTotal.value = r.data?.total || 0
+    ruleTotal.value = Number(r.data?.total) || 0
   } catch (e) { console.error(e) }
   finally { ruleLoading.value = false }
 }
@@ -245,7 +245,7 @@ const fetchIndicators = async () => {
   try {
     const r = await getAssessIndicatorList({ pageNum: indPageNum.value, pageSize: indPageSize.value })
     indicatorList.value = r.data?.records || []
-    indTotal.value = r.data?.total || 0
+    indTotal.value = Number(r.data?.total) || 0
   } catch (e) { console.error(e) }
   finally { indLoading.value = false }
 }
@@ -314,7 +314,7 @@ const fetchResults = async () => {
   try {
     const r = await getAssessResult({ type: template.value, pageNum: resultPageNum.value, pageSize: resultPageSize.value })
     results.value = r.data?.records || []
-    resultTotal.value = r.data?.total || 0
+    resultTotal.value = Number(r.data?.total) || 0
   } catch (e) { console.error(e) }
   finally { resultLoading.value = false }
 }

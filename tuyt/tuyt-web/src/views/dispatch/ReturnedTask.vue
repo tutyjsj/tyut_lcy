@@ -212,7 +212,7 @@ const fetch = async () => {
       filtered = records.filter(r => r.auditResult === query.auditStatus)
     }
     list.value = filtered
-    total.value = res.data?.total || list.value.length
+    total.value = Number(res.data?.total) || list.value.length
   } catch { /* */ }
   finally { loading.value = false }
 }

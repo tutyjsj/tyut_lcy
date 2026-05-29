@@ -113,7 +113,7 @@ const fetchData = async () => {
   try {
     const r = await getAssessResult({ ...query })
     list.value = r.data?.records || r.data?.list || []
-    total.value = r.data?.total || list.value.length
+    total.value = Number(r.data?.total) || list.value.length
   } catch (e) {
     console.error('考评结果查询失败:', e)
     ElMessage.error('加载失败，请检查网络或联系管理员')

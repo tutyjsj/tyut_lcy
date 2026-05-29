@@ -72,7 +72,7 @@ import { getCheckItemList, saveCheckItem, deleteCheckItem } from '@/api'
 const loading = ref(false), list = ref([]), total = ref(0), pageNum = ref(1), pageSize = ref(10), dialogVisible = ref(false), isEdit = ref(false)
 const form = reactive({ id: null, itemName: '', itemType: '', monitorType: '', inputType: '', status: 1 })
 
-const fetch = async () => { loading.value = true; try { const r = await getCheckItemList({ pageNum: pageNum.value, pageSize: pageSize.value }); list.value = r.data?.records || r.data?.list || r.data || []; total.value = r.data?.total || 0 } catch {} finally { loading.value = false } }
+const fetch = async () => { loading.value = true; try { const r = await getCheckItemList({ pageNum: pageNum.value, pageSize: pageSize.value }); list.value = r.data?.records || r.data?.list || r.data || []; total.value = Number(r.data?.total) || 0 } catch {} finally { loading.value = false } }
 const openDialog = (row) => { isEdit.value = !!row; Object.assign(form, row || { id: null, itemName: '', itemType: '', monitorType: '', inputType: '', status: 1 }); dialogVisible.value = true }
 const handleSave = async () => { try { await saveCheckItem(form); ElMessage.success(isEdit.value ? '修改成功' : '新建成功'); dialogVisible.value = false; fetch() } catch { ElMessage.error('保存失败') } }
 const handleDelete = (row) => {

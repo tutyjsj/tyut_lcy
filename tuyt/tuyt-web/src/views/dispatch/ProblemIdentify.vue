@@ -264,7 +264,7 @@ const loadSimilarProblems = async () => {
     const res = await getProblemList(params)
     const all = (res.data?.records || res.data?.list || [])
     similarProblems.value = all.filter(p => p.id != route.params.id)
-    similarTotal.value = res.data?.total || all.length
+    similarTotal.value = Number(res.data?.total) || all.length
   } catch { similarProblems.value = [] }
   finally { similarLoading.value = false }
 }
@@ -276,8 +276,8 @@ const loadHistory = async () => {
       const res = await getProblemList({ enterpriseName: problemInfo.value.enterpriseName, pageNum: historyPageNum.value, pageSize: historyPageSize.value })
       const all = (res.data?.records || res.data?.list || [])
       historyProblems.value = all.filter(p => p.id != route.params.id)
-      historyTotal.value = res.data?.total || all.length
-      if (historyPageNum.value === 1) problemInfo.value.historyCount = res.data?.total || historyProblems.value.length
+      historyTotal.value = Number(res.data?.total) || all.length
+      if (historyPageNum.value === 1) problemInfo.value.historyCount = Number(res.data?.total) || historyProblems.value.length
     }
   } catch { historyProblems.value = [] }
   finally { historyLoading.value = false }

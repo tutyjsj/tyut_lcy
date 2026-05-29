@@ -75,7 +75,7 @@ public class EnvProblemServiceImpl extends ServiceImpl<EnvProblemMapper, EnvProb
             wrapper.eq(EnvProblem::getProblemLevel, problemLevel);
         }
         if (StringUtils.hasText(pollutionType)) {
-            wrapper.eq(EnvProblem::getPollutionType, pollutionType);
+            wrapper.eq(EnvProblem::getProblemType, pollutionType);
         }
         if (StringUtils.hasText(problemType)) {
             wrapper.eq(EnvProblem::getProblemType, problemType);
@@ -278,7 +278,7 @@ public class EnvProblemServiceImpl extends ServiceImpl<EnvProblemMapper, EnvProb
             wrapper.eq(EnvProblem::getProblemLevel, problemLevel);
         }
         if (StringUtils.hasText(pollutionType)) {
-            wrapper.eq(EnvProblem::getPollutionType, pollutionType);
+            wrapper.eq(EnvProblem::getProblemType, pollutionType);
         }
         if (gridId != null) {
             List<String> cityAreaNames = resolveCityAreaNames(gridId);
@@ -328,8 +328,8 @@ public class EnvProblemServiceImpl extends ServiceImpl<EnvProblemMapper, EnvProb
 
         // 污染类型分布（待处理问题）
         Map<String, Long> pollutionTypeMap = pendingList.stream()
-                .filter(p -> p.getPollutionType() != null)
-                .collect(Collectors.groupingBy(EnvProblem::getPollutionType, Collectors.counting()));
+                .filter(p -> p.getProblemType() != null)
+                .collect(Collectors.groupingBy(EnvProblem::getProblemType, Collectors.counting()));
         List<Map<String, Object>> pollutionTypes = new ArrayList<>();
         for (Map.Entry<String, Long> entry : pollutionTypeMap.entrySet()) {
             Map<String, Object> item = new HashMap<>();
@@ -519,7 +519,7 @@ public class EnvProblemServiceImpl extends ServiceImpl<EnvProblemMapper, EnvProb
             wrapper.eq(EnvProblem::getProblemLevel, problemLevel);
         }
         if (StringUtils.hasText(pollutionType)) {
-            wrapper.eq(EnvProblem::getPollutionType, pollutionType);
+            wrapper.eq(EnvProblem::getProblemType, pollutionType);
         }
         if (StringUtils.hasText(problemType)) {
             wrapper.eq(EnvProblem::getProblemType, problemType);

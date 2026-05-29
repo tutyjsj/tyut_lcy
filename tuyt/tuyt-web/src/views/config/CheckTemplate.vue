@@ -62,7 +62,7 @@ const fetch = async () => {
   try {
     const r = await getCheckTemplateList({ pageNum: pageNum.value, pageSize: pageSize.value })
     list.value = r.data?.records || r.data?.list || r.data || []
-    total.value = r.data?.total || 0
+    total.value = Number(r.data?.total) || 0
   } catch {} finally { loading.value = false }
 }
 const openDialog = (row) => {

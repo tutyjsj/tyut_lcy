@@ -82,6 +82,10 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination v-if="unitTotal > 0" style="margin-top:14px;display:flex;justify-content:flex-end"
+        v-model:current-page="unitPageNum" v-model:page-size="unitPageSize"
+        :page-sizes="[10,20,50]" :total="unitTotal"
+        layout="total, sizes, prev, pager, next" @current-change="fetchData" @size-change="fetchData" />
     </div>
 
     <!-- 任务详情对话框 -->
@@ -157,12 +161,13 @@ async function loadOrgTree(parentId) {
 
 /* ===== 数据获取与图表渲染 ===== */
 const unitList = ref([])
+const unitPageNum = ref(1), unitPageSize = ref(10), unitTotal = ref(0)
 
 async function fetchData() {
   loading.value = true
   try {
     const unitId = query.unitIdPath ? query.unitIdPath[query.unitIdPath.length - 1] : null
-    const res = await getReportData({ month: query.month, unitId })
+    const res = await getReportData({ month: query.month, unitId, pageNum: unitPageNum.value, pageSize: unitPageSize.value })
     const data = res.data || {}
 
     // 全局状态饼图
@@ -182,6 +187,7 @@ async function fetchData() {
     // 单位柱状图
     const units = data.units || []
     unitList.value = units
+    unitTotal.value = Number(data.total) || units.length
     if (barChart) {
       barChart.setOption({
         xAxis: { data: units.map(u => u.name.length > 8 ? u.name.substring(0, 7) + '..' : u.name) },
@@ -284,7 +290,7 @@ async function loadTaskDetails() {
     } else {
       res = await getReportTasks(params)
       taskDetailList.value = res.data?.records || []
-      taskTotal.value = res.data?.total || 0
+      taskTotal.value = Number(res.data?.total) || 0
     }
   } catch { /* ignore */ }
   finally { taskLoading.value = false }

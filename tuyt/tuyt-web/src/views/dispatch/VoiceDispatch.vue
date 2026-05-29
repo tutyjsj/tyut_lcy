@@ -67,6 +67,10 @@
           </a>
         </div>
         <el-empty v-if="!recentCalls.length" description="暂无通话记录" :image-size="80" />
+        <el-pagination v-if="callTotal > 1" style="margin-top:10px;display:flex;justify-content:flex-end"
+          v-model:current-page="callPageNum" v-model:page-size="callPageSize"
+          :page-sizes="[5,10,20]" :total="callTotal"
+          layout="total, sizes, prev, pager, next" small @current-change="loadRecentCalls" @size-change="loadRecentCalls" />
       </div>
 
       <!-- 短信历史 -->
@@ -92,6 +96,10 @@
           </div>
         </div>
         <el-empty v-if="!smsHistory.length" description="暂无短信记录" :image-size="80" />
+        <el-pagination v-if="smsTotal > 0" style="margin-top:10px;display:flex;justify-content:flex-end"
+          v-model:current-page="smsPageNum" v-model:page-size="smsPageSize"
+          :page-sizes="[5,10,20]" :total="smsTotal"
+          layout="total, sizes, prev, pager, next" small @current-change="loadSmsHistory" @size-change="loadSmsHistory" />
       </div>
     </el-card>
 
@@ -278,18 +286,31 @@ const doSendSms = async () => {
 // ==================== 通话记录 ====================
 const recentCalls = ref([])
 const smsHistory = ref([])
+const allCalls = ref([])
+const callPageNum = ref(1), callPageSize = ref(10), callTotal = ref(0)
+const smsPageNum = ref(1), smsPageSize = ref(10), smsTotal = ref(0)
 
 const loadRecentCalls = async () => {
   try {
-    const res = await getRecentCalls(10)
-    recentCalls.value = res.data || []
+    const res = await getRecentCalls({ pageNum: callPageNum.value, pageSize: callPageSize.value })
+    const data = res.data?.records || res.data?.list || res.data
+    if (Array.isArray(data)) {
+      allCalls.value = data
+      callTotal.value = data.length
+      const start = (callPageNum.value - 1) * callPageSize.value
+      recentCalls.value = data.slice(start, start + callPageSize.value)
+    } else {
+      recentCalls.value = data || []
+      callTotal.value = Number(res.data?.total) || 0
+    }
   } catch { /* */ }
 }
 
 const loadSmsHistory = async () => {
   try {
-    const res = await getSmsList({ pageNum: 1, pageSize: 20 })
+    const res = await getSmsList({ pageNum: smsPageNum.value, pageSize: smsPageSize.value })
     smsHistory.value = res.data?.records || res.data?.list || res.data || []
+    smsTotal.value = Number(res.data?.total) || 0
   } catch { /* */ }
 }
 
@@ -305,6 +326,7 @@ const recordCallFor = async (row) => {
       callType: 'OUTGOING'
     })
   } catch { /* */ }
+  callPageNum.value = 1
   loadRecentCalls()
 }
 
@@ -320,6 +342,7 @@ const recordQuickCall = async (name, phone, position, orgName) => {
       callType: 'OUTGOING'
     })
   } catch { /* */ }
+  callPageNum.value = 1
   loadRecentCalls()
 }
 
@@ -354,7 +377,7 @@ const fetchData = async () => {
     const keyword = [query.name, query.position].filter(Boolean).join(' ')
     const res = await getContactList({ keyword, contactType: query.contactType, pageNum: query.pageNum, pageSize: query.pageSize })
     list.value = res.data?.records || res.data?.list || res.data || []
-    total.value = res.data?.total ?? list.value.length
+    total.value = Number(res.data?.total) || 0
   } catch { /* */ }
   finally { loading.value = false }
 }

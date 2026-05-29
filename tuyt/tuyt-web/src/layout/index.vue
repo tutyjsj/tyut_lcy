@@ -51,10 +51,13 @@
           </el-breadcrumb>
         </div>
         <div class="header-right">
+          <!-- 消息通知 -->
+          <MessageNotice :poll-interval="60000" />
+          <!-- 用户下拉 -->
           <el-dropdown @command="handleCommand">
             <span class="user-info">
               <el-icon><UserFilled /></el-icon>
-              {{ userStore.username }}
+              {{ displayName }}
               <el-icon><ArrowDown /></el-icon>
             </span>
             <template #dropdown>
@@ -86,12 +89,18 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { asyncRoutes } from '@/router'
+import MessageNotice from '@/components/MessageNotice/MessageNotice.vue'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 const isCollapse = ref(false)
 const routes = asyncRoutes
+
+// 优先显示真实姓名，回退到用户名
+const displayName = computed(() => {
+  return userStore.realName || userStore.username || '未登录'
+})
 
 const activeMenu = computed(() => route.path)
 
@@ -139,6 +148,7 @@ const handleCommand = (cmd) => { if (cmd === 'logout') userStore.logout() }
 .layout-header { display: flex; align-items: center; justify-content: space-between; background: #fff; border-bottom: 1px solid #e6e6e6; padding: 0 20px; height: 56px; }
 .header-left { display: flex; align-items: center; gap: 16px; }
 .collapse-btn { cursor: pointer; }
+.header-right { display: flex; align-items: center; gap: 16px; }
 .user-info { display: flex; align-items: center; gap: 6px; cursor: pointer; color: #606266; }
 .layout-main {
   position: relative;

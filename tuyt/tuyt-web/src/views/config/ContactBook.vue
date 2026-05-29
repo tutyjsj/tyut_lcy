@@ -69,7 +69,7 @@ const fetchData = async () => {
   try {
     const res = await getContactList({ ...query })
     list.value = res.data?.records || res.data?.list || res.data || []
-    total.value = res.data?.total ?? list.value.length
+    total.value = Number(res.data?.total) || 0
   } catch {} finally { loading.value = false }
 }
 const search = () => { query.pageNum = 1; fetchData() }

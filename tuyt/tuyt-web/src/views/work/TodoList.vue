@@ -315,7 +315,7 @@ const fetch = async () => {
   const res = await getTodoList({ ...query }).catch(() => ({ data: { records: [], total: 0 } }))
   const d = res.data || {}
   list.value = d.records || d.list || []
-  total.value = d.total ?? list.value.length
+  total.value = Number(d.total) || 0
   loading.value = false
 }
 const search = () => { query.pageNum = 1; fetch() }

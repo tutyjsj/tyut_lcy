@@ -61,9 +61,9 @@ const fetchData = async () => {
   try {
     const res = await getProblemStatistics()
     const data = res.data || {}
-    total.value = data.total || 0
-    pending.value = data.pending || 0
-    done.value = data.done || 0
+    total.value = Number(data.total) || 0
+    pending.value = Number(data.pending) || 0
+    done.value = Number(data.done) || 0
 
     const pData = (data.pollutionTypes || []).map(v => ({
       name: pollutionTypeOptions.find(o => o.value === v.name)?.label || v.name,

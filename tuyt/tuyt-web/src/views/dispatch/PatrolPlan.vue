@@ -373,7 +373,7 @@ const fetch = async () => {
     if (query.status) params.status = query.status
     const r = await getPatrolPlanList(params)
     list.value = r.data?.records || r.data?.list || []
-    total.value = r.data?.total || list.value.length
+    total.value = Number(r.data?.total) || list.value.length
   } catch { /* */ }
   finally { loading.value = false }
 }
@@ -517,7 +517,7 @@ const fetchEnterprises = async () => {
     }
     const r = await getEnterpriseList(params)
     const records = r.data?.records || r.data?.list || []
-    enterpriseTotal.value = r.data?.total || records.length
+    enterpriseTotal.value = Number(r.data?.total) || records.length
     availableEnterprises.value = records
   } catch { /* */ }
   finally { enterpriseLoading.value = false }

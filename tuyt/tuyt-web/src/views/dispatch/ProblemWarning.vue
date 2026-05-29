@@ -22,14 +22,14 @@
     <div class="search-bar">
       <el-form :inline="true" :model="query">
         <el-form-item label="预警级别">
-          <el-select v-model="query.problemLevel" clearable placeholder="全部" style="width:130px">
+          <el-select v-model="query.problemLevel" clearable placeholder="全部" style="width:130px" @change="onFilterChange">
             <el-option label="严重 (I级)" value="I" />
             <el-option label="较严重 (II级)" value="II" />
             <el-option label="一般 (III级)" value="III" />
           </el-select>
         </el-form-item>
         <el-form-item label="污染类型">
-          <el-select v-model="query.pollutionType" clearable placeholder="全部" style="width:130px">
+          <el-select v-model="query.pollutionType" clearable placeholder="全部" style="width:130px" @change="onFilterChange">
             <el-option v-for="opt in pollutionTypeOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
           </el-select>
         </el-form-item>
@@ -236,6 +236,11 @@ const fetchFilteredStats = async (filterParams) => {
   } catch { /* 后端未就绪 */ }
 }
 
+/** 筛选条件变化时自动触发查询（污染类型、预警级别变化） */
+const onFilterChange = () => {
+  search()
+}
+
 const search = async () => {
   query.pageNum = 1
   loading.value = true
@@ -250,7 +255,7 @@ const search = async () => {
     const res = await getProblemList(params)
     const data = res.data || {}
     list.value = data.records || data.list || []
-    total.value = data.total ?? list.value.length
+    total.value = Number(data.total) || 0
     // 刷新图表数据（带筛选条件，不影响统计卡片数字）
     fetchFilteredStats({ problemLevel: query.problemLevel, pollutionType: query.pollutionType, gridId: query.gridId })
   } catch { /* 后端未就绪 */ }

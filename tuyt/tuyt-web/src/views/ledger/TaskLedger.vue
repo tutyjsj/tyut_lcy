@@ -289,7 +289,7 @@ const fetchData = async () => {
   try {
     const res = await getTaskList({ ...query })
     list.value = res.data?.records || res.data?.list || []
-    total.value = res.data?.total ?? list.value.length
+    total.value = Number(res.data?.total) || 0
   } catch { ElMessage.error('查询失败') }
   finally { loading.value = false }
 }

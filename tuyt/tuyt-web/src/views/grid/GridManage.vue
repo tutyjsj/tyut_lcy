@@ -52,7 +52,7 @@ const fetch = async () => {
   try {
     const r = await getGridList({ ...query })
     list.value = r.data?.records || []
-    total.value = r.data?.total ?? list.value.length
+    total.value = Number(r.data?.total) || 0
   } catch {
     list.value = []
     total.value = 0

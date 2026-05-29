@@ -193,7 +193,7 @@ const fetchData = async () => {
   try {
     const res = await getProblemList({ ...query })
     list.value = res.data?.records || res.data?.list || []
-    total.value = res.data?.total ?? list.value.length
+    total.value = Number(res.data?.total) || 0
   } catch (e) { ElMessage.error('查询失败') }
   finally { loading.value = false }
 }

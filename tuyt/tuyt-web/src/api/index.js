@@ -265,3 +265,21 @@ export function getRecentCalls(limit) {
 export function recordCallApi(data) {
   return request.post('/dispatch/call/record', data)
 }
+
+// ===== 消息通知 =====
+/** 获取消息列表（支持分页、类型筛选） */
+export function getMessageList(params) {
+  return request.get('/message/list', { params })
+}
+/** 获取未读消息数 */
+export function getUnreadCount() {
+  return request.get('/message/unread-count')
+}
+/** 标记消息已读（单条或批量） */
+export function markMessageRead(ids) {
+  return request.put('/message/read', { ids: Array.isArray(ids) ? ids : [ids] })
+}
+/** 标记全部已读 */
+export function markAllRead() {
+  return request.put('/message/read-all')
+}

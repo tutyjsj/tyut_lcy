@@ -13,7 +13,8 @@ import {
   User, Lock, SuccessFilled, CircleCloseFilled,
   Search, Location, Connection, Crop, Minus, Link,
   Aim, Edit, RefreshLeft, Delete, MoreFilled, Select,
-  CircleCheck, Picture, VideoCamera
+  CircleCheck, Picture, VideoCamera, Bell, ChatDotRound,
+  Calendar, Timer, Finished, Promotion
 } from '@element-plus/icons-vue'
 
 const icons = {
@@ -23,7 +24,8 @@ const icons = {
   User, Lock, SuccessFilled, CircleCloseFilled,
   Search, Location, Connection, Crop, Minus, Link,
   Aim, Edit, RefreshLeft, Delete, MoreFilled, Select,
-  CircleCheck, Picture, VideoCamera
+  CircleCheck, Picture, VideoCamera, Bell, ChatDotRound,
+  Calendar, Timer, Finished, Promotion
 }
 
 const app = createApp(App)

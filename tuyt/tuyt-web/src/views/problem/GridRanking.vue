@@ -122,7 +122,7 @@ const fetch = async () => {
     const r = await getGridRanking({ ...query })
     const d = r.data || {}
     list.value = d.records || d.list || []
-    total.value = d.total || list.value.length
+    total.value = Number(d.total) || 0
     await renderCharts()
   } catch {
     list.value = []; total.value = 0

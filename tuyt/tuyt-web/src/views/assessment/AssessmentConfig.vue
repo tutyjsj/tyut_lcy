@@ -41,6 +41,10 @@
           </template>
           <el-empty v-else description="暂无模板，请点击「新增模板」创建" :image-size="60" />
         </div>
+        <el-pagination v-if="templateTotal > 0" style="margin-top:10px;display:flex;justify-content:center"
+          v-model:current-page="templatePageNum" v-model:page-size="templatePageSize"
+          :page-sizes="[10,20,50]" :total="templateTotal"
+          layout="total, prev, pager, next" small @current-change="fetchTemplates" @size-change="fetchTemplates" />
       </div>
 
       <!-- 右侧：考评项详情 -->
@@ -176,6 +180,7 @@ import { Plus, Edit, Delete, CircleCheckFilled, Select } from '@element-plus/ico
 import { getAssessTemplateList, saveAssessTemplate, deleteAssessTemplate, getAssessTemplateItems, saveAssessTemplateItems } from '@/api'
 
 const templateLoading = ref(false), templateList = ref([])
+const templatePageNum = ref(1), templatePageSize = ref(10), templateTotal = ref(0)
 const itemLoading = ref(false), itemList = ref([])
 const currentTemplate = ref(null)
 
@@ -186,8 +191,9 @@ const templateForm = reactive({ id: null, templateName: '', templateType: '', te
 const fetchTemplates = async () => {
   templateLoading.value = true
   try {
-    const r = await getAssessTemplateList({ pageNum: 1, pageSize: 50 })
+    const r = await getAssessTemplateList({ pageNum: templatePageNum.value, pageSize: templatePageSize.value })
     templateList.value = r.data?.records || []
+    templateTotal.value = Number(r.data?.total) || 0
   } catch (e) {
     console.error(e)
     ElMessage.error('加载模板列表失败')

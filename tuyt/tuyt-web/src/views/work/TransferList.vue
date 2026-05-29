@@ -59,7 +59,7 @@ const fetch = async () => {
   try {
     const res = await getTransferList({ pageNum: pageNum.value, pageSize: pageSize.value })
     list.value = res.data?.records || res.data?.list || []
-    total.value = res.data?.total || 0
+    total.value = Number(res.data?.total) || 0
   } catch { /* 后端未就绪 */ }
   finally { loading.value = false }
 }
