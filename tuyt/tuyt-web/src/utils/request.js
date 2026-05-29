@@ -22,14 +22,18 @@ service.interceptors.request.use(
 // 响应拦截
 service.interceptors.response.use(
   response => {
+    // blob 类型响应（文件下载）直接返回 blob 数据，跳过 JSON 解析
+    if (response.config.responseType === 'blob') {
+      return response.data
+    }
     const res = response.data
     if (res.code !== 200) {
-      ElMessage.error(res.msg || '请求失败')
+      ElMessage.error(res.message || '请求失败')
       if (res.code === 401) {
         removeToken()
         window.location.href = '/login'
       }
-      return Promise.reject(new Error(res.msg || 'Error'))
+      return Promise.reject(new Error(res.message || 'Error'))
     }
     return res
   },

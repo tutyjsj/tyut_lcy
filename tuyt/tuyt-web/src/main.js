@@ -10,14 +10,20 @@ import {
   Monitor, Fold, Expand, UserFilled, ArrowDown, SwitchButton,
   List, Grid, Folder, WarningFilled, Odometer, Document,
   Trophy, Setting, MapLocation, ZoomIn, ZoomOut, FullScreen,
-  User, Lock
+  User, Lock, SuccessFilled, CircleCloseFilled,
+  Search, Location, Connection, Crop, Minus, Link,
+  Aim, Edit, RefreshLeft, Delete, MoreFilled, Select,
+  CircleCheck, Picture, VideoCamera
 } from '@element-plus/icons-vue'
 
 const icons = {
   Monitor, Fold, Expand, UserFilled, ArrowDown, SwitchButton,
   List, Grid, Folder, WarningFilled, Odometer, Document,
   Trophy, Setting, MapLocation, ZoomIn, ZoomOut, FullScreen,
-  User, Lock
+  User, Lock, SuccessFilled, CircleCloseFilled,
+  Search, Location, Connection, Crop, Minus, Link,
+  Aim, Edit, RefreshLeft, Delete, MoreFilled, Select,
+  CircleCheck, Picture, VideoCamera
 }
 
 const app = createApp(App)

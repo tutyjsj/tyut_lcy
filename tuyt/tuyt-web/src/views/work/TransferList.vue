@@ -13,6 +13,7 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination style="margin-top:16px;display:flex;justify-content:flex-end" v-model:current-page="pageNum" v-model:page-size="pageSize" :page-sizes="[10,20,50,100]" :total="total" layout="total, sizes, prev, pager, next" @current-change="fetch" @size-change="fetch" />
     </div>
 
     <!-- 查看详情 -->
@@ -37,6 +38,9 @@ import { getTransferList, getTaskDetail } from '@/api'
 
 const loading = ref(false)
 const list = ref([])
+const total = ref(0)
+const pageNum = ref(1)
+const pageSize = ref(10)
 const detailVisible = ref(false)
 const currentRow = ref({})
 
@@ -44,17 +48,21 @@ const openDetail = async (row) => {
   currentRow.value = { ...row }
   try {
     const res = await getTaskDetail(row.taskId || row.id)
-    if (res.data) currentRow.value = { ...currentRow.value, ...res.data }
+    // 保留列表中的运转字段（详情接口不会返回 transferTime/transferType/transferReason）
+    if (res.data) currentRow.value = { ...res.data, transferType: row.transferType, transferTime: row.transferTime, transferReason: row.transferReason }
   } catch { /* 使用列表数据兜底 */ }
   detailVisible.value = true
 }
 
-onMounted(async () => {
+const fetch = async () => {
   loading.value = true
   try {
-    const res = await getTransferList({ pageNum: 1, pageSize: 20 })
+    const res = await getTransferList({ pageNum: pageNum.value, pageSize: pageSize.value })
     list.value = res.data?.records || res.data?.list || []
+    total.value = res.data?.total || 0
   } catch { /* 后端未就绪 */ }
   finally { loading.value = false }
-})
+}
+
+onMounted(fetch)
 </script>

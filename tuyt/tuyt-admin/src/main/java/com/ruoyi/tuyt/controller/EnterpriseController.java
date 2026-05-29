@@ -22,11 +22,15 @@ public class EnterpriseController {
     @Operation(summary = "分页查询企业列表")
     @GetMapping("/list")
     public R<PageResult<Enterprise>> list(
-            @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String pollutionType,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String superviseType,
+            @RequestParam(required = false) String enterpriseType,
+            @RequestParam(required = false) Long gridId,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String excludeStatus,
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize) {
-        return R.ok(enterpriseService.queryPage(keyword, pollutionType, pageNum, pageSize));
+        return R.ok(enterpriseService.queryPage(name, superviseType, enterpriseType, gridId, status, excludeStatus, pageNum, pageSize));
     }
 
     @Operation(summary = "获取企业详情")
@@ -36,7 +40,7 @@ public class EnterpriseController {
     }
 
     @Operation(summary = "新增企业")
-    @PostMapping("/")
+    @PostMapping
     public R<Void> add(@RequestBody Enterprise enterprise) {
         enterpriseService.add(enterprise);
         R<Void> r = R.ok();

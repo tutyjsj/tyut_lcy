@@ -26,7 +26,7 @@ export function loadAMap() {
   console.log('[AMap] 开始加载 SDK... key:', AMAP_KEY.substring(0, 8) + '***')
 
   AMapPromise = new Promise((resolve, reject) => {
-    const plugin = 'AMap.PolyEditor,AMap.Geocoder,AMap.DistrictSearch,AMap.Scale,AMap.ToolBar'
+    const plugin = 'AMap.PolyEditor,AMap.Geocoder,AMap.DistrictSearch,AMap.Scale,AMap.ToolBar,AMap.RangingTool,AMap.MouseTool,AMap.AutoComplete,AMap.PlaceSearch,AMap.CircleEditor,AMap.Geolocation'
     const script = document.createElement('script')
     script.src = `https://webapi.amap.com/maps?v=${AMAP_VERSION}&key=${AMAP_KEY}&plugin=${plugin}`
     script.onload = () => {
@@ -77,25 +77,38 @@ export async function createMap(containerId, options = {}) {
   return new AMap.Map(containerId, {
     zoom: 11,
     center: [112.55, 37.87], // 默认太原市中心
-    mapStyle: 'amap://styles/light',
     ...options
   })
 }
 
 /**
- * 在地图上添加问题点位标记
+ * 统一获取坐标（兼容 lng/lat 和 longitude/latitude）
  */
+function getCoord(item) {
+  return [item.lng ?? item.longitude, item.lat ?? item.latitude]
+}
+
+/** 统一获取等级（兼容 level 和 problemLevel） */
+function getLevel(item) {
+  return item.level ?? item.problemLevel
+}
+
+/** 生成纯 CSS 标记 HTML（不依赖外部图片，避免 404） */
+function createDotHtml(color, size = 16) {
+  const half = size / 2
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.4);transform:translate(-50%,-50%)"></div>`
+}
+
 export function addProblemMarkers(map, AMap, problems, onClick) {
+  const colorMap = { I: '#F56C6C', II: '#E6A23C', III: '#409EFF' }
   const markers = problems.map(p => {
-    const color = MARKER_ICONS.problem[p.level] || '#409EFF'
+    const level = getLevel(p) || 'III'
+    const color = colorMap[level] || '#409EFF'
     const marker = new AMap.Marker({
-      position: [p.lng, p.lat],
-      title: p.description,
-      icon: new AMap.Icon({
-        size: new AMap.Size(24, 32),
-        image: `https://webapi.amap.com/theme/v1.3/markers/n/mark_r${p.level === 'I' ? 'ed' : p.level === 'II' ? 'orange' : 'blue'}.png`,
-        imageSize: new AMap.Size(24, 32)
-      }),
+      position: getCoord(p),
+      title: p.description || p.problemDesc || '',
+      content: createDotHtml(color, 18),
+      anchor: 'center',
       extData: p
     })
     if (onClick) {
@@ -105,6 +118,85 @@ export function addProblemMarkers(map, AMap, problems, onClick) {
   })
   map.add(markers)
   return markers
+}
+
+/**
+ * 在地图上添加企业点位标记
+ */
+export function addEnterpriseMarkers(map, AMap, enterprises, onClick) {
+  const markers = enterprises.map(e => {
+    const marker = new AMap.Marker({
+      position: getCoord(e),
+      title: e.enterpriseName || '',
+      content: createDotHtml('#67C23A', 14),
+      anchor: 'center',
+      extData: e
+    })
+    if (onClick) {
+      marker.on('click', () => onClick(e))
+    }
+    return marker
+  })
+  map.add(markers)
+  return markers
+}
+
+/**
+ * 添加自定义图标标记
+ */
+export function addCustomMarker(map, AMap, item, iconConfig, onClick) {
+  const [lng, lat] = getCoord(item)
+  const marker = new AMap.Marker({
+    position: [lng, lat],
+    title: item.name || item.title || '',
+    content: createDotHtml(iconConfig.color, iconConfig.size || 16),
+    anchor: 'center',
+    offset: new AMap.Pixel(0, 0),
+    extData: item
+  })
+  if (onClick) {
+    marker.on('click', () => onClick(item, marker))
+  }
+  map.add(marker)
+  return marker
+}
+
+/** 创建图标Marker（使用高德默认图标） */
+export function createIconMarker(map, AMap, position, iconUrl, title, extData, onClick) {
+  const marker = new AMap.Marker({
+    position,
+    title: title || '',
+    icon: new AMap.Icon({
+      size: new AMap.Size(32, 32),
+      image: iconUrl,
+      imageSize: new AMap.Size(32, 32)
+    }),
+    offset: new AMap.Pixel(-16, -32),
+    extData
+  })
+  if (onClick) marker.on('click', onClick)
+  map.add(marker)
+  return marker
+}
+
+/** 清除所有覆盖物（保留底图） */
+export function clearMapOverlays(map) {
+  if (!map) return
+  map.clearMap()
+}
+
+/** 获取两点间距离（米） */
+export function getDistance(map, p1, p2) {
+  const AMap = window.AMap
+  if (!AMap || !map) return 0
+  return Math.round(AMap.GeometryUtil.distance(p1, p2))
+}
+
+/** 获取多边形面积（平方米） */
+export function getPolygonArea(path) {
+  const AMap = window.AMap
+  if (!AMap) return 0
+  return Math.round(AMap.GeometryUtil.ringArea(path))
 }
 
 /**

@@ -8,6 +8,11 @@ spring:
     active: dev
   application:
     name: tuyt-admin
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+    serialization:
+      write-dates-as-timestamps: false
 
 --- # dev 环境
 spring:
@@ -65,6 +70,17 @@ knife4j:
   enable: true
   setting:
     language: zh_cn
+
+# 短信服务配置
+sms:
+  # 提供商: console(控制台打印,默认) / yunpian(云片真实发送)
+  provider: console
+  # 短信签名（发送时自动附加在内容前面）
+  sign-name: 【大同环保】
+  # 云片配置（仅 provider=yunpian 时需要）
+  yunpian:
+    api-key:
+    url: https://sms.yunpian.com/v2/sms/single_send.json
 
 # 文件上传
 file:

@@ -93,11 +93,18 @@ export function changeProblemLevel(id, level) {
 export function getProblemStatistics(params) {
   return request.get('/problem/statistics', { params })
 }
+/** 问题预警专用统计（支持筛选参数，基于全部数据库数据，不依赖分页） */
+export function getWarningStatistics(params) {
+  return request.get('/problem/warning-stats', { params })
+}
 export function getGridRanking(params) {
   return request.get('/problem/ranking', { params })
 }
 export function getProblemMap(params) {
   return request.get('/problem/map', { params })
+}
+export function getProblemLogs(id) {
+  return request.get(`/problem/${id}/logs`)
 }
 
 // ===== 任务调度 =====
@@ -110,11 +117,20 @@ export function getTaskDetail(id) {
 export function dispatchTask(data) {
   return request.post('/task/dispatch', data)
 }
+export function updateTask(id, data) {
+  return request.put(`/task/${id}`, data)
+}
 export function urgeTask(id, data) {
   return request.post(`/task/${id}/urge`, data)
 }
 export function superviseTask(id, data) {
   return request.post(`/task/${id}/supervise`, data)
+}
+export function deleteTask(ids) {
+  return request.delete('/task/batch', { data: ids })
+}
+export function publishTask(id) {
+  return request.put(`/task/${id}/publish`)
 }
 export function revokeTask(id, data) {
   return request.put(`/task/${id}/revoke`, data)
@@ -136,6 +152,9 @@ export function getPatrolPlanList(params) {
 export function createPatrolPlan(data) {
   return request.post('/patrol-plan', data)
 }
+export function updatePatrolPlan(id, data) {
+  return request.put(`/patrol-plan/${id}`, data)
+}
 export function deletePatrolPlan(id) {
   return request.delete(`/patrol-plan/${id}`)
 }
@@ -149,6 +168,12 @@ export function exportTaskLedger(params) {
 }
 export function getReportData(params) {
   return request.get('/ledger/report', { params })
+}
+export function getReportTasks(params) {
+  return request.get('/ledger/report/tasks', { params })
+}
+export function getReportOrgTree(parentId) {
+  return request.get('/ledger/report/org-tree', { params: parentId ? { parentId } : {} })
 }
 
 // ===== 考评 =====
@@ -169,6 +194,25 @@ export function getAssessResult(params) {
 }
 export function runAssess(data) {
   return request.post('/assessment/run', data)
+}
+// 考评模板
+export function getAssessTemplateList(params) {
+  return request.get('/assessment/templates', { params })
+}
+export function getAssessTemplatesEnabled() {
+  return request.get('/assessment/templates/enabled')
+}
+export function saveAssessTemplate(data) {
+  return request.post('/assessment/templates', data)
+}
+export function deleteAssessTemplate(id) {
+  return request.delete(`/assessment/templates/${id}`)
+}
+export function getAssessTemplateItems(templateId) {
+  return request.get(`/assessment/templates/${templateId}/items`)
+}
+export function saveAssessTemplateItems(templateId, data) {
+  return request.post(`/assessment/templates/${templateId}/items`, data)
 }
 
 // ===== 配置 =====
@@ -198,4 +242,26 @@ export function saveContact(data) {
 }
 export function deleteContact(id) {
   return request.delete(`/config/contacts/${id}`)
+}
+
+// ===== 短信/语音调度 =====
+/** 短信记录列表 */
+export function getSmsList(params) {
+  return request.get('/dispatch/sms/list', { params })
+}
+/** 发送短信(单个) */
+export function sendSms(data) {
+  return request.post('/dispatch/sms/send', data)
+}
+/** 批量发送短信 */
+export function batchSendSms(data) {
+  return request.post('/dispatch/sms/batch-send', data)
+}
+/** 近期通话记录 */
+export function getRecentCalls(limit) {
+  return request.get('/dispatch/call/recent', { params: { limit: limit || 10 } })
+}
+/** 记录通话 */
+export function recordCallApi(data) {
+  return request.post('/dispatch/call/record', data)
 }

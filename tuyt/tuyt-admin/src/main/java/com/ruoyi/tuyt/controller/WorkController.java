@@ -27,10 +27,7 @@ public class WorkController {
             @RequestParam(required = false) String taskType,
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize) {
-        String keyword = (taskNo != null ? taskNo : "")
-                + (title != null ? " " + title : "")
-                + (taskType != null ? " " + taskType : "");
-        return R.ok(taskInfoService.queryPage(keyword.trim().isEmpty() ? null : keyword.trim(), "DISPATCHED", pageNum, pageSize));
+        return R.ok(taskInfoService.queryPage(taskNo, title, taskType, "DISPATCHED", null, null, pageNum, pageSize));
     }
 
     @Operation(summary = "处理待办任务")
@@ -47,7 +44,7 @@ public class WorkController {
     public R<PageResult<TaskInfo>> transfer(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize) {
-        return R.ok(taskInfoService.queryPage(null, "RETURNED", pageNum, pageSize));
+        return R.ok(taskInfoService.queryPage(null, null, null, "RETURNED", null, null, pageNum, pageSize));
     }
 
     @Operation(summary = "我的已办")
@@ -55,6 +52,6 @@ public class WorkController {
     public R<PageResult<TaskInfo>> done(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize) {
-        return R.ok(taskInfoService.queryPage(null, "DONE", pageNum, pageSize));
+        return R.ok(taskInfoService.queryPage(null, null, null, "DONE", null, null, pageNum, pageSize));
     }
 }

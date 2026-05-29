@@ -117,6 +117,12 @@ export const asyncRoutes = [
         meta: { title: '问题甄别', hidden: true }
       },
       {
+        path: '/dispatch/warning',
+        name: 'ProblemWarning',
+        component: () => import('@/views/dispatch/ProblemWarning.vue'),
+        meta: { title: '问题预警' }
+      },
+      {
         path: '/dispatch/task',
         name: 'TaskDispatch',
         component: () => import('@/views/dispatch/TaskDispatch.vue'),
@@ -127,6 +133,39 @@ export const asyncRoutes = [
         name: 'PatrolPlan',
         component: () => import('@/views/dispatch/PatrolPlan.vue'),
         meta: { title: '巡查计划' }
+      },
+      {
+        path: '/dispatch/calendar',
+        name: 'WorkCalendar',
+        component: () => import('@/views/dispatch/WorkCalendar.vue'),
+        meta: { title: '工作日历' }
+      },
+      {
+        path: '/dispatch/voice',
+        name: 'VoiceDispatch',
+        component: () => import('@/views/dispatch/VoiceDispatch.vue'),
+        meta: { title: '语音调度' }
+      },
+      {
+        path: '/dispatch/returned',
+        name: 'ReturnedTask',
+        component: () => import('@/views/dispatch/ReturnedTask.vue'),
+        meta: { title: '退回任务' }
+      },
+      {
+        path: '/dispatch/statistics',
+        redirect: '/problem/statistics',
+        meta: { title: '问题统计', hidden: false }
+      },
+      {
+        path: '/dispatch/ranking',
+        redirect: '/problem/ranking',
+        meta: { title: '网格排名', hidden: false }
+      },
+      {
+        path: '/dispatch/map',
+        redirect: '/map/full',
+        meta: { title: '问题地图', hidden: false }
       }
     ]
   },
@@ -173,6 +212,12 @@ export const asyncRoutes = [
         name: 'AssessmentQuery',
         component: () => import('@/views/assessment/AssessmentQuery.vue'),
         meta: { title: '考评结果查询' }
+      },
+      {
+        path: '/assessment/config',
+        name: 'AssessmentConfig',
+        component: () => import('@/views/assessment/AssessmentConfig.vue'),
+        meta: { title: '考评模板配置' }
       }
     ]
   },

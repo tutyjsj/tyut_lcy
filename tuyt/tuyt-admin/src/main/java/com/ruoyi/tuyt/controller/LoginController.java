@@ -8,6 +8,7 @@ import com.ruoyi.tuyt.framework.config.JwtTokenUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +16,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Tag(name = "登录管理")
 @RestController
 @RequiredArgsConstructor
@@ -80,7 +82,11 @@ public class LoginController {
             long remainingMillis = JwtTokenUtil.getRemainingMillis(token);
             if (remainingMillis > 0) {
                 String blacklistKey = JwtTokenUtil.BLACKLIST_PREFIX + token;
-                stringRedisTemplate.opsForValue().set(blacklistKey, "1", Duration.ofMillis(remainingMillis));
+                try {
+                    stringRedisTemplate.opsForValue().set(blacklistKey, "1", Duration.ofMillis(remainingMillis));
+                } catch (Exception e) {
+                    log.warn("Redis 不可用，无法写入 Token 黑名单: {}", e.getMessage());
+                }
             }
         }
 

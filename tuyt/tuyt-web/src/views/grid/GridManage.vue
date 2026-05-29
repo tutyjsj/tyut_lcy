@@ -20,6 +20,7 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination style="margin-top:16px;display:flex;justify-content:flex-end" v-model:current-page="query.pageNum" v-model:page-size="query.pageSize" :page-sizes="[10,20,50,100]" :total="total" layout="total, sizes, prev, pager, next" @current-change="fetch" @size-change="fetch" />
     </div>
 
     <el-dialog v-model="dialogVisible" :title="isEdit?'编辑网格':'新建网格'" width="600px">
@@ -42,10 +43,22 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getGridList, createGrid, updateGrid, deleteGrid } from '@/api'
 
-const loading = ref(false), list = ref([]), dialogVisible = ref(false), isEdit = ref(false)
+const loading = ref(false), list = ref([]), total = ref(0), dialogVisible = ref(false), isEdit = ref(false)
+const query = reactive({ pageNum: 1, pageSize: 10 })
 const form = reactive({ id: null, gridName: '', gridLevel: '', parentId: null, orgId: '', leader: '', responsiblePerson: '', responsiblePhone: '' })
 
-const fetch = async () => { loading.value = true; const r = await getGridList().catch(()=>({data:{records:[]}})); list.value = r.data?.records||[]; loading.value = false }
+const fetch = async () => {
+  loading.value = true
+  try {
+    const r = await getGridList({ ...query })
+    list.value = r.data?.records || []
+    total.value = r.data?.total ?? list.value.length
+  } catch {
+    list.value = []
+    total.value = 0
+  }
+  finally { loading.value = false }
+}
 const openDialog = (row) => { isEdit.value = !!row; Object.assign(form, row||{id:null,gridName:'',gridLevel:'',parentId:null,orgId:'',leader:'',responsiblePerson:'',responsiblePhone:''}); dialogVisible.value = true }
 const submitForm = async () => {
   try {
@@ -55,6 +68,44 @@ const submitForm = async () => {
     fetch()
   } catch { ElMessage.error('操作失败') }
 }
-const handleDelete = (row) => { ElMessageBox.confirm(`删除后「${row.gridName}」及其下级网格将无法恢复，是否继续？`, '删除网格', { confirmButtonText: '确认删除', cancelButtonText: '取消', type: 'warning' }).then(async () => { try { await deleteGrid(row.id); ElMessage.success('删除成功'); fetch() } catch { ElMessage.error('删除失败') } }).catch(()=>{}) }
+const handleDelete = (row) => {
+  ElMessageBox.confirm(
+    `<div class="del-detail">
+      <div class="del-row"><span class="del-label">网格名称</span><span class="del-value"><strong>${row.gridName || '-'}</strong></span></div>
+      <div class="del-row"><span class="del-label">网格级别</span><span class="del-value">${row.gridLevel===1?'市级':row.gridLevel===2?'区县级':'乡镇/街道'}</span></div>
+      <div class="del-row"><span class="del-label">分管领导</span><span class="del-value">${row.leader || '-'}</span></div>
+      <div class="del-row"><span class="del-label">责任人</span><span class="del-value">${row.responsiblePerson || '-'}</span></div>
+    </div>
+    <div class="del-warning">
+      <div class="del-warning-title">此操作不可撤销，删除后该网格将永久移除！</div>
+      <div class="del-warning-note">注：该网格下的所有下级网格也将一并删除，已派发的任务记录不受影响。</div>
+    </div>`,
+    '删除网格',
+    {
+      confirmButtonText: '确认删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+      dangerouslyUseHTMLString: true,
+      draggable: false,
+      center: true,
+      appendTo: document.body,
+      customClass: 'assess-del-dialog',
+      closeOnClickModal: false,
+      closeOnPressEscape: false
+    }
+  ).then(async () => {
+    try { await deleteGrid(row.id); ElMessage.success('删除成功'); fetch() }
+    catch { ElMessage.error('删除失败') }
+  }).catch(() => {})
+}
 onMounted(fetch)
 </script>
+
+<style scoped>
+.search-bar { margin-bottom: 16px; display: flex; gap: 12px; align-items: center; }
+.table-card { background: #fff; border-radius: 8px; padding: 4px 0 0 0; }
+</style>
+
+<style>
+/* 删除弹窗样式已统一在 global.scss 中定义（assess-del-dialog / del-detail 等） */
+</style>

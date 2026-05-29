@@ -62,10 +62,15 @@ public class LoginInterceptor implements HandlerInterceptor {
         }
 
         // 检查 Redis 黑名单（用户已退出登录的 Token）
-        String blacklistKey = JwtTokenUtil.BLACKLIST_PREFIX + token;
-        if (Boolean.TRUE.equals(stringRedisTemplate.hasKey(blacklistKey))) {
-            writeUnauthorized(response, "Token已失效，请重新登录");
-            return false;
+        // 如果 Redis 不可用，跳过黑名单检查，不阻断请求
+        try {
+            String blacklistKey = JwtTokenUtil.BLACKLIST_PREFIX + token;
+            if (Boolean.TRUE.equals(stringRedisTemplate.hasKey(blacklistKey))) {
+                writeUnauthorized(response, "Token已失效，请重新登录");
+                return false;
+            }
+        } catch (Exception e) {
+            log.warn("Redis 不可用，跳过 Token 黑名单检查: {}", e.getMessage());
         }
 
         // 存入 ThreadLocal（后续可以在 Controller 中获取）

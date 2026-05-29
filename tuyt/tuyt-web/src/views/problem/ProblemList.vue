@@ -4,32 +4,71 @@
     <div class="search-bar">
       <el-form :inline="true" :model="query">
         <el-form-item label="事发企业"><el-input v-model="query.enterpriseName" placeholder="请输入" clearable /></el-form-item>
-        <el-form-item label="问题等级"><el-select v-model="query.level" clearable placeholder="全部"><el-option label="严重" value="I" /><el-option label="较严重" value="II" /><el-option label="一般" value="III" /></el-select></el-form-item>
-        <el-form-item label="污染类型"><el-select v-model="query.pollutionType" clearable placeholder="全部"><el-option label="废水" value="WASTE_WATER" /><el-option label="废气" value="WASTE_GAS" /><el-option label="噪声" value="NOISE" /><el-option label="固危废" value="SOLID_WASTE" /></el-select></el-form-item>
-        <el-form-item label="问题来源"><el-select v-model="query.source" clearable placeholder="全部"><el-option label="公众投诉" value="PUBLIC_COMPLAINT" /><el-option label="现场监察" value="FIELD_INSPECTION" /><el-option label="在线监测" value="ONLINE_MONITOR" /></el-select></el-form-item>
-        <el-form-item><el-button type="primary" @click="search">查询</el-button><el-button @click="reset">重置</el-button><el-button type="warning" :disabled="!selectedIds.length" @click="batchClose">批量关闭</el-button></el-form-item>
+        <el-form-item label="网格区域">
+          <el-select v-model="query.gridId" clearable placeholder="全部市" style="width:130px" @change="onGridChange">
+            <el-option v-for="g in cityGrids" :key="g.id" :label="g.gridName" :value="g.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="问题等级">
+          <el-select v-model="query.problemLevel" clearable placeholder="全部" style="width: 120px">
+            <el-option v-for="opt in Object.entries(problemLevelMap).map(([value, cfg]) => ({ value, label: cfg.label }))" :key="opt.value" :label="opt.label" :value="opt.value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="污染类型">
+          <el-select v-model="query.problemType" clearable placeholder="全部" style="width: 120px">
+            <el-option v-for="opt in pollutionTypeOptions.filter(o => ['WASTE_WATER','WASTE_GAS','NOISE','SOLID_WASTE','HAZARDOUS'].includes(o.value))" :key="opt.value" :label="opt.label" :value="opt.value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="问题来源">
+          <el-select v-model="query.problemSource" clearable placeholder="全部" style="width: 120px">
+            <el-option v-for="opt in problemSourceOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="处理状态">
+          <el-select v-model="query.handleStatus" clearable placeholder="全部" style="width: 100px">
+            <el-option v-for="(label, value) in handleStatusMap" :key="value" :label="label" :value="value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item><el-button type="primary" @click="search">查询</el-button><el-button @click="reset">重置</el-button></el-form-item>
       </el-form>
     </div>
     <div class="table-card">
-      <el-table :data="list" stripe v-loading="loading" @selection-change="v=>selectedIds=v.map(i=>i.id)">
-        <el-table-column type="selection" width="40" />
+      <div style="margin-bottom:12px;display:flex;align-items:center;gap:12px">
+        <el-button type="danger" :disabled="selectedIds.length===0" @click="batchClose">批量关闭</el-button>
+        <span v-if="selectedIds.length>0" style="color:#909399;font-size:13px">已选择 {{ selectedIds.length }} 项</span>
+      </div>
+      <el-table :data="list" stripe v-loading="loading" @selection-change="handleSelectionChange">
+        <el-table-column type="selection" width="50" />
         <el-table-column prop="enterpriseName" label="事发企业" width="160" />
         <el-table-column prop="alarmTime" label="报警时间" width="160" />
         <el-table-column prop="problemDesc" label="问题描述" min-width="200" show-overflow-tooltip />
-        <el-table-column prop="problemSource" label="来源" width="100"><template #default="{row}">{{ sourceMap[row.problemSource] || row.problemSource }}</template></el-table-column>
-        <el-table-column prop="problemLevel" label="等级" width="80"><template #default="{row}"><el-tag :type="row.problemLevel==='I'?'danger':row.problemLevel==='II'?'warning':''" size="small">{{ row.problemLevel==='I'?'严重':row.problemLevel==='II'?'较严重':'一般' }}</el-tag></template></el-table-column>
-        <el-table-column prop="handleStatus" label="状态" width="90"><template #default="{row}">{{ statusMap[row.handleStatus] || row.handleStatus }}</template></el-table-column>
+        <el-table-column prop="problemSource" label="来源" width="100"><template #default="{row}">{{ problemSourceMap[row.problemSource] || row.problemSource }}</template></el-table-column>
+        <el-table-column prop="pollutionType" label="污染类型" width="100"><template #default="{row}">{{ pollutionTypeMap[row.pollutionType] || row.pollutionType || '-' }}</template></el-table-column>
+        <el-table-column prop="problemLevel" label="等级" width="80"><template #default="{row}"><el-tag :type="problemLevelMap[row.problemLevel]?.tagType || ''" size="small">{{ problemLevelMap[row.problemLevel]?.label || row.problemLevel }}</el-tag></template></el-table-column>
+        <el-table-column prop="handleStatus" label="状态" width="90"><template #default="{row}"><el-tag :type="handleStatusTagType[row.handleStatus] || ''" size="small">{{ handleStatusMap[row.handleStatus] || row.handleStatus }}</el-tag></template></el-table-column>
         <el-table-column label="操作" width="180" fixed="right">
           <template #default="{row}"><el-button type="primary" link @click="$router.push('/dispatch/problem/'+row.id)">甄别</el-button><el-button type="primary" link @click="openEdit(row)">编辑</el-button><el-button type="danger" link @click="handleClose(row)">关闭</el-button></template>
         </el-table-column>
       </el-table>
-      <el-pagination style="margin-top:16px;justify-content:flex-end" v-model:current-page="query.pageNum" v-model:page-size="query.pageSize" :total="total" layout="total, prev, pager, next" />
+      <el-pagination style="margin-top:16px;display:flex;justify-content:flex-end" v-model:current-page="query.pageNum" v-model:page-size="query.pageSize" :page-sizes="[10,20,50,100]" :total="total" layout="total, sizes, prev, pager, next" @current-change="fetch" @size-change="fetch" />
     </div>
     <el-dialog v-model="dialogVisible" title="编辑问题" width="600px">
       <el-form :model="editForm" label-width="90px">
-        <el-form-item label="问题等级"><el-select v-model="editForm.problemLevel" style="width:100%"><el-option label="严重" value="I" /><el-option label="较严重" value="II" /><el-option label="一般" value="III" /></el-select></el-form-item>
-        <el-form-item label="污染类型"><el-select v-model="editForm.pollutionType" style="width:100%"><el-option label="废水" value="WASTE_WATER" /><el-option label="废气" value="WASTE_GAS" /><el-option label="噪声" value="NOISE" /><el-option label="固危废" value="SOLID_WASTE" /></el-select></el-form-item>
-        <el-form-item label="问题来源"><el-select v-model="editForm.problemSource" style="width:100%"><el-option label="公众投诉" value="PUBLIC_COMPLAINT" /><el-option label="现场监察" value="FIELD_INSPECTION" /><el-option label="在线监测" value="ONLINE_MONITOR" /></el-select></el-form-item>
+        <el-form-item label="问题等级">
+          <el-select v-model="editForm.problemLevel" style="width:100%">
+            <el-option v-for="opt in Object.entries(problemLevelMap).map(([value, cfg]) => ({ value, label: cfg.label }))" :key="opt.value" :label="opt.label" :value="opt.value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="污染类型">
+          <el-select v-model="editForm.pollutionType" style="width:100%">
+            <el-option v-for="opt in pollutionTypeOptions.filter(o => ['WASTE_WATER','WASTE_GAS','NOISE','SOLID_WASTE','HAZARDOUS'].includes(o.value))" :key="opt.value" :label="opt.label" :value="opt.value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="问题来源">
+          <el-select v-model="editForm.problemSource" style="width:100%">
+            <el-option v-for="opt in problemSourceOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="问题描述"><el-input v-model="editForm.problemDesc" type="textarea" :rows="3" /></el-form-item>
         <el-form-item label="地址"><el-input v-model="editForm.address" /></el-form-item>
       </el-form>
@@ -60,24 +99,69 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, watch, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Warning } from '@element-plus/icons-vue'
-import { getProblemList, closeProblem, getProblemDetail, updateProblem } from '@/api'
+import { getProblemList, closeProblem, getProblemDetail, updateProblem, getGridList } from '@/api'
+import { problemLevelMap, pollutionTypeOptions, pollutionTypeMap, problemSourceOptions, problemSourceMap, handleStatusMap, handleStatusTagType } from '@/utils/constants'
 
-const loading = ref(false), list = ref([]), total = ref(0), selectedIds = ref([])
-const query = reactive({ enterpriseName:'', level:'', pollutionType:'', source:'', pageNum:1, pageSize:10 })
+const route = useRoute()
+const loading = ref(false), list = ref([]), total = ref(0)
+const query = reactive({ enterpriseName:'', areaName:'', problemLevel:'', pollutionType:'', problemType:'', problemSource:'', handleStatus:'', gridId:null, pageNum:1, pageSize:10 })
 const dialogVisible = ref(false)
 const editForm = reactive({ id:null, problemLevel:'', pollutionType:'', problemSource:'', problemDesc:'', address:'' })
-const statusMap = { PENDING:'待处理', PROCESSED:'已处理', DONE:'处理完成', CLOSED:'已关闭' }
-const sourceMap = { PUBLIC_COMPLAINT:'公众投诉', FIELD_INSPECTION:'现场监察', ONLINE_MONITOR:'在线监测' }
-const pollutionMap = { WASTE_WATER:'废水', WASTE_GAS:'废气', NOISE:'噪声', SOLID_WASTE:'固危废' }
 const closeDialogVisible = ref(false)
 const closeReason = ref('')
 const closeTarget = ref(null)
-const fetch = async () => { loading.value=true; const r=await getProblemList(query).catch(()=>({data:{records:[],total:0}})); const d=r.data||{}; list.value=d.records||d.list||[]; total.value=d.total||0; loading.value=false }
+const selectedIds = ref([])
+
+const handleSelectionChange = (rows) => {
+  selectedIds.value = rows.map(r => r.id)
+}
+
+const batchClose = () => {
+  const selectedRows = list.value.filter(r => selectedIds.value.includes(r.id))
+  const closable = selectedRows.filter(r => ['PENDING','PROCESSED','DONE'].includes(r.handleStatus))
+  const unclosable = selectedRows.filter(r => !['PENDING','PROCESSED','DONE'].includes(r.handleStatus))
+  if (closable.length === 0) {
+    ElMessage.warning('所选问题均为已关闭状态，无法再次关闭')
+    return
+  }
+  if (unclosable.length > 0) {
+    ElMessage.warning(`已自动排除 ${unclosable.length} 个已关闭的问题`)
+  }
+  closeTarget.value = closable.map(r => r.id)
+  closeReason.value = ''
+  closeDialogVisible.value = true
+}
+
+const fetch = async () => {
+  loading.value = true
+  try {
+    const r = await getProblemList({ ...query })
+    const d = r.data || {}
+    list.value = d.records || d.list || []
+    total.value = d.total ?? list.value.length
+  } catch {
+    list.value = []
+    total.value = 0
+  }
+  loading.value = false
+}
 const search = () => { query.pageNum=1; fetch() }
-const reset = () => { query.enterpriseName=''; query.level=''; query.pollutionType=''; query.source=''; search() }
+const reset = () => { query.enterpriseName=''; query.areaName=''; query.problemLevel=''; query.pollutionType=''; query.problemType=''; query.problemSource=''; query.handleStatus=''; query.gridId=null; search() }
+const onGridChange = () => { query.areaName = ''; search() }
+
+// 加载地级市网格下拉选项
+const cityGrids = ref([])
+onMounted(async () => {
+  try {
+    const r = await getGridList({ gridLevel: 1, pageSize: 100 })
+    cityGrids.value = (r.data && r.data.records) ? r.data.records : []
+  } catch { /* 后端未就绪 */ }
+  fetch()
+})
 const openEdit = async (row) => {
   try {
     const r = await getProblemDetail(row.id)
@@ -95,14 +179,43 @@ const handleUpdate = async () => {
   } catch { ElMessage.error('更新失败') }
 }
 const handleClose = (row) => { closeTarget.value = [row.id]; closeReason.value = ''; closeDialogVisible.value = true }
-const batchClose = () => { closeTarget.value = [...selectedIds.value]; closeReason.value = ''; closeDialogVisible.value = true }
 const confirmClose = async () => {
   try {
     await closeProblem({ ids: closeTarget.value, reason: closeReason.value.trim() })
     closeDialogVisible.value = false
+    selectedIds.value = []
     ElMessage.success(closeTarget.value.length > 1 ? `已批量关闭${closeTarget.value.length}个问题` : '已关闭')
     fetch()
   } catch { ElMessage.error('关闭失败') }
 }
-onMounted(fetch)
+
+// 从网格排名跳转时接收 gridId 参数，自动选中城市并查询
+watch(() => route.query.gridId, (val) => {
+  if (val) {
+    query.gridId = Number(val)
+    query.areaName = ''
+    search()
+  }
+}, { immediate: true })
+// 从问题统计跳转时接收 handleStatus 参数，自动筛选状态
+watch(() => route.query.handleStatus, (val) => {
+  if (val) {
+    query.handleStatus = val
+    search()
+  }
+}, { immediate: true })
+// 从问题统计图表点击跳转时接收 problemType 参数，自动筛选污染类型
+watch(() => route.query.problemType, (val) => {
+  if (val) {
+    query.problemType = val
+    search()
+  }
+}, { immediate: true })
+// 从问题统计图表点击跳转时接收 problemSource 参数，自动筛选问题来源
+watch(() => route.query.problemSource, (val) => {
+  if (val) {
+    query.problemSource = val
+    search()
+  }
+}, { immediate: true })
 </script>

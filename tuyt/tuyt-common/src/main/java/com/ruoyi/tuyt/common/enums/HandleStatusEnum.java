@@ -13,7 +13,8 @@ public enum HandleStatusEnum {
     PENDING("PENDING", "待处理"),
     PROCESSED("PROCESSED", "已处理"),
     DONE("DONE", "处理完成"),
-    CLOSED("CLOSED", "已关闭");
+    CLOSED("CLOSED", "已关闭"),
+    IGNORED("IGNORED", "已忽略");
 
     private final String code;
     private final String name;

@@ -12,6 +12,7 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination style="margin-top:16px;display:flex;justify-content:flex-end" v-model:current-page="pageNum" v-model:page-size="pageSize" :page-sizes="[10,20,50,100]" :total="total" layout="total, sizes, prev, pager, next" @current-change="fetch" @size-change="fetch" />
     </div>
 
     <!-- 查看详情 -->
@@ -22,7 +23,7 @@
         <el-form-item label="任务类型"><span>{{ typeText(currentRow.taskType) }}</span></el-form-item>
         <el-form-item label="紧急程度"><span>{{ urgencyText(currentRow.urgency) }}</span></el-form-item>
         <el-form-item label="完结时间"><span>{{ currentRow.finishTime }}</span></el-form-item>
-        <el-form-item label="任务内容"><span>{{ currentRow.taskContent || '-' }}</span></el-form-item>
+        <el-form-item label="任务内容"><span style="white-space:pre-wrap">{{ formatContent(currentRow.taskContent) }}</span></el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="detailVisible = false">关闭</el-button>
@@ -34,14 +35,31 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { getDoneList, getTaskDetail } from '@/api'
+import { taskTypeMap, urgencyMap, rectifyStatusMap, productionStatusMap } from '@/utils/constants'
 
 const loading = ref(false)
 const list = ref([])
+const total = ref(0)
+const pageNum = ref(1)
+const pageSize = ref(10)
 const detailVisible = ref(false)
 const currentRow = ref({})
 
-const typeText = (v) => v === 'DAILY' ? '日常巡查' : v === 'SHUTDOWN' ? '停产巡查' : '问题核查'
-const urgencyText = (v) => v === 'URGENT' ? '特急' : v === 'NORMAL' ? '一般' : '紧急'
+const typeText = (v) => taskTypeMap[v] || v
+const urgencyText = (v) => urgencyMap[v] || v
+const formatContent = (text) => {
+  if (!text) return '-'
+  let result = text
+  // 替换整改情况
+  Object.entries(rectifyStatusMap).forEach(([key, label]) => {
+    result = result.replace(new RegExp(`整改情况:\\s*${key}`, 'g'), `整改情况: ${label}`)
+  })
+  // 替换生产经营情况
+  Object.entries(productionStatusMap).forEach(([key, label]) => {
+    result = result.replace(new RegExp(`生产经营:\\s*${key}`, 'g'), `生产经营: ${label}`)
+  })
+  return result
+}
 
 const openDetail = async (row) => {
   currentRow.value = { ...row }
@@ -52,12 +70,15 @@ const openDetail = async (row) => {
   detailVisible.value = true
 }
 
-onMounted(async () => {
+const fetch = async () => {
   loading.value = true
   try {
-    const res = await getDoneList({ pageNum: 1, pageSize: 20 })
+    const res = await getDoneList({ pageNum: pageNum.value, pageSize: pageSize.value })
     list.value = res.data?.records || res.data?.list || []
+    total.value = res.data?.total || 0
   } catch { /* 后端未就绪 */ }
   finally { loading.value = false }
-})
+}
+
+onMounted(fetch)
 </script>

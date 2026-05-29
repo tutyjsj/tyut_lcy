@@ -1,6 +1,8 @@
 package com.ruoyi.tuyt.controller;
 
 import com.ruoyi.tuyt.business.problem.entity.EnvProblem;
+import com.ruoyi.tuyt.business.problem.entity.EnvProblemLog;
+import com.ruoyi.tuyt.business.problem.service.IEnvProblemLogService;
 import com.ruoyi.tuyt.business.problem.service.IEnvProblemService;
 import com.ruoyi.tuyt.common.result.PageResult;
 import com.ruoyi.tuyt.common.result.R;
@@ -20,16 +22,24 @@ import java.util.stream.Collectors;
 public class ProblemController {
 
     private final IEnvProblemService envProblemService;
+    private final IEnvProblemLogService envProblemLogService;
 
     @Operation(summary = "分页查询问题列表")
     @GetMapping("/list")
     public R<PageResult<EnvProblem>> list(
-            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String problemNo,
+            @RequestParam(required = false) String enterpriseName,
+            @RequestParam(required = false) Long enterpriseId,
+            @RequestParam(required = false) String areaName,
             @RequestParam(required = false) String problemLevel,
+            @RequestParam(required = false) String pollutionType,
+            @RequestParam(required = false) String problemType,
+            @RequestParam(required = false) String problemSource,
             @RequestParam(required = false) String handleStatus,
+            @RequestParam(required = false) Long gridId,
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize) {
-        return R.ok(envProblemService.queryPage(keyword, problemLevel, handleStatus, pageNum, pageSize));
+        return R.ok(envProblemService.queryPage(problemNo, enterpriseName, enterpriseId, areaName, problemLevel, pollutionType, problemType, problemSource, handleStatus, gridId, pageNum, pageSize));
     }
 
     @Operation(summary = "获取问题详情")
@@ -57,12 +67,14 @@ public class ProblemController {
         return r;
     }
 
-    @Operation(summary = "删除问题")
-    @DeleteMapping("/{id}")
-    public R<Void> delete(@PathVariable Long id) {
-        envProblemService.delete(List.of(id));
+    @Operation(summary = "合并问题")
+    @PutMapping("/merge")
+    public R<Void> merge(@RequestBody Map<String, Object> params) {
+        List<Long> ids = convertToLongList(params.get("ids"));
+        Long targetId = Long.valueOf(params.get("targetId").toString());
+        envProblemService.merge(ids, targetId);
         R<Void> r = R.ok();
-        r.setMessage("删除问题成功");
+        r.setMessage("合并问题成功");
         return r;
     }
 
@@ -89,17 +101,6 @@ public class ProblemController {
         return r;
     }
 
-    @Operation(summary = "合并问题")
-    @PostMapping("/merge")
-    public R<Void> merge(@RequestBody Map<String, Object> params) {
-        List<Long> ids = convertToLongList(params.get("ids"));
-        Long targetId = Long.valueOf(params.get("targetId").toString());
-        envProblemService.merge(ids, targetId);
-        R<Void> r = R.ok();
-        r.setMessage("合并问题成功");
-        return r;
-    }
-
     /** 安全转换 JSON 数字列表为 Long 列表（JSON反序列化默认将数字解析为Integer） */
     @SuppressWarnings("unchecked")
     private List<Long> convertToLongList(Object obj) {
@@ -115,9 +116,30 @@ public class ProblemController {
         return R.ok(envProblemService.statistics());
     }
 
+    @Operation(summary = "问题预警专用统计（支持筛选参数，基于全部数据，不依赖分页）")
+    @GetMapping("/warning-stats")
+    public R<Map<String, Object>> warningStatistics(
+            @RequestParam(required = false) String problemLevel,
+            @RequestParam(required = false) String pollutionType,
+            @RequestParam(required = false) Long gridId) {
+        return R.ok(envProblemService.warningStatistics(problemLevel, pollutionType, gridId));
+    }
+
     @Operation(summary = "网格排名")
     @GetMapping("/ranking")
-    public R<List<Map<String, Object>>> ranking(@RequestParam(defaultValue = "10") Integer top) {
-        return R.ok(envProblemService.ranking(top));
+    public R<PageResult<Map<String, Object>>> ranking(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) Long parentId,
+            @RequestParam(defaultValue = "month") String timeRange,
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "3") Integer pageSize) {
+        return R.ok(envProblemService.ranking(keyword, sort, parentId, timeRange, pageNum, pageSize));
+    }
+
+    @Operation(summary = "获取问题动态日志")
+    @GetMapping("/{id}/logs")
+    public R<List<EnvProblemLog>> getLogs(@PathVariable Long id) {
+        return R.ok(envProblemLogService.getLogsByProblemId(id));
     }
 }

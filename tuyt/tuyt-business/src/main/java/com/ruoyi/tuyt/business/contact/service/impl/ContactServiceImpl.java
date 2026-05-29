@@ -21,7 +21,12 @@ public class ContactServiceImpl extends ServiceImpl<ContactMapper, Contact> impl
     public PageResult<Contact> queryPage(String keyword, String contactType, Integer pageNum, Integer pageSize) {
         LambdaQueryWrapper<Contact> wrapper = new LambdaQueryWrapper<>();
         if (StringUtils.hasText(keyword)) {
-            wrapper.like(Contact::getName, keyword).or().like(Contact::getPhone, keyword);
+            wrapper.and(w -> w
+                .like(Contact::getName, keyword)
+                .or().like(Contact::getPhone, keyword)
+                .or().like(Contact::getOrgName, keyword)
+                .or().like(Contact::getPosition, keyword)
+            );
         }
         if (StringUtils.hasText(contactType)) {
             wrapper.eq(Contact::getContactType, contactType);

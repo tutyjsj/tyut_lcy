@@ -48,6 +48,31 @@ public class SysOrganizationServiceImpl extends ServiceImpl<SysOrganizationMappe
     }
 
     @Override
+    public List<Map<String, Object>> getOrgTree(Long parentId) {
+        List<SysOrganization> all = list(new LambdaQueryWrapper<SysOrganization>().orderByAsc(SysOrganization::getLevel).orderByAsc(SysOrganization::getSort));
+        Map<Long, List<SysOrganization>> childMap = all.stream()
+                .collect(Collectors.groupingBy(o -> o.getParentId() == null ? 0L : o.getParentId()));
+        // 如果未指定parentId，返回一级机构（level=1 或 parentId=0）
+        List<SysOrganization> targetList;
+        if (parentId != null) {
+            targetList = childMap.getOrDefault(parentId, List.of());
+        } else {
+            targetList = all.stream().filter(o -> o.getLevel() == null || o.getLevel() <= 1
+                    || (o.getParentId() == null || o.getParentId() == 0)).toList();
+        }
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (SysOrganization org : targetList) {
+            Map<String, Object> item = new java.util.LinkedHashMap<>();
+            item.put("id", org.getId());
+            item.put("name", org.getOrgName());
+            item.put("level", org.getLevel());
+            item.put("hasChildren", !childMap.getOrDefault(org.getId(), List.of()).isEmpty());
+            result.add(item);
+        }
+        return result;
+    }
+
+    @Override
     public SysOrganization getById(Long id) {
         SysOrganization org = super.getById(id);
         if (org == null) throw new BusinessException("组织不存在");
