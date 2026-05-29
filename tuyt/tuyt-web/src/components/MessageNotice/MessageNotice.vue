@@ -148,8 +148,7 @@ function handleMarkAllRead() {
 
 function goToMessageCenter() {
   visible.value = false
-  // 可扩展为独立消息中心页面
-  // router.push('/message/center')
+  router.push('/message/center')
 }
 
 function getTabUnread(key) {

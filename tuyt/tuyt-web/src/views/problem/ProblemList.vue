@@ -85,14 +85,14 @@
           <div style="color:#909399;font-size:13px">关闭后问题将不再参与后续处理流程，请填写关闭原因。</div>
         </div>
       </div>
-      <el-form label-width="90px">
+      <el-form label-width="90px" @submit.prevent="confirmClose">
         <el-form-item label="关闭原因" required>
-          <el-input v-model="closeReason" type="textarea" :rows="3" placeholder="请输入关闭原因，不少于5个字" />
+          <el-input v-model="closeReason" type="textarea" :rows="3" placeholder="请输入关闭原因，不少于5个字" maxlength="500" show-word-limit />
         </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="closeDialogVisible=false">取消</el-button>
-        <el-button type="danger" :disabled="closeReason.trim().length<5" @click="confirmClose">确认关闭</el-button>
+        <el-button type="danger" :disabled="closeReason.trim().length<5" :loading="submittingClose" @click="confirmClose">确认关闭</el-button>
       </template>
     </el-dialog>
   </div>
@@ -114,6 +114,7 @@ const editForm = reactive({ id:null, problemLevel:'', pollutionType:'', problemS
 const closeDialogVisible = ref(false)
 const closeReason = ref('')
 const closeTarget = ref(null)
+const submittingClose = ref(false)
 const selectedIds = ref([])
 
 const handleSelectionChange = (rows) => {
@@ -178,15 +179,24 @@ const handleUpdate = async () => {
     fetch()
   } catch { ElMessage.error('更新失败') }
 }
-const handleClose = (row) => { closeTarget.value = [row.id]; closeReason.value = ''; closeDialogVisible.value = true }
+const handleClose = (row) => {
+  if (row.handleStatus === 'CLOSED') { ElMessage.warning('该问题已关闭'); return }
+  closeTarget.value = [row.id]; closeReason.value = ''; closeDialogVisible.value = true
+}
 const confirmClose = async () => {
+  if (closeReason.value.trim().length < 5) { ElMessage.warning('请至少输入5个字关闭原因'); return }
+  submittingClose.value = true
   try {
     await closeProblem({ ids: closeTarget.value, reason: closeReason.value.trim() })
     closeDialogVisible.value = false
     selectedIds.value = []
     ElMessage.success(closeTarget.value.length > 1 ? `已批量关闭${closeTarget.value.length}个问题` : '已关闭')
     fetch()
-  } catch { ElMessage.error('关闭失败') }
+  } catch (e) {
+    ElMessage.error('关闭失败: ' + (e?.response?.data?.message || e?.message || '请稍后重试'))
+  } finally {
+    submittingClose.value = false
+  }
 }
 
 // 从网格排名跳转时接收 gridId 参数，自动选中城市并查询

@@ -172,15 +172,23 @@ async function fetchData() {
 
     // 全局状态饼图
     if (pieChart) {
+      const completed = data.completed || 0
+      const processing = data.processing || 0
+      const pending = data.pending || 0
+      const overdue = data.overdue || 0
       pieChart.setOption({
         series: [{
           data: [
-            { name: '已完成', value: data.completed || 0, itemStyle: { color: '#67C23A' } },
-            { name: '处理中', value: data.processing || 0, itemStyle: { color: '#409EFF' } },
-            { name: '待处理', value: data.pending || 0, itemStyle: { color: '#E6A23C' } },
-            { name: '超期', value: data.overdue || 0, itemStyle: { color: '#F56C6C' } }
+            { name: '已完成', value: completed, itemStyle: { color: '#67C23A' } },
+            { name: '处理中', value: processing, itemStyle: { color: '#409EFF' } },
+            { name: '待处理', value: pending, itemStyle: { color: '#E6A23C' } },
+            { name: '超期', value: overdue, itemStyle: { color: '#F56C6C' } }
           ]
-        }]
+        }],
+        graphic: completed + processing + pending + overdue === 0 ? [{
+          type: 'text', left: 'center', top: 'center',
+          style: { text: '暂无任务数据', fontSize: 14, fill: '#909399', fontWeight: 'normal' }
+        }] : []
       })
     }
 
@@ -192,11 +200,15 @@ async function fetchData() {
       barChart.setOption({
         xAxis: { data: units.map(u => u.name.length > 8 ? u.name.substring(0, 7) + '..' : u.name) },
         series: [
-          { name: '已完成', data: units.map(u => u.done), itemStyle: { color: '#67C23A' } },
-          { name: '处理中', data: units.map(u => u.processing), itemStyle: { color: '#409EFF' } },
-          { name: '待处理', data: units.map(u => u.pending), itemStyle: { color: '#E6A23C' } },
-          { name: '超期', data: units.map(u => u.overdue), itemStyle: { color: '#F56C6C' } }
-        ]
+          { name: '已完成', type: 'bar', barMaxWidth: 40, data: units.map(u => u.done || 0), itemStyle: { color: '#67C23A' } },
+          { name: '处理中', type: 'bar', barMaxWidth: 40, data: units.map(u => u.processing || 0), itemStyle: { color: '#409EFF' } },
+          { name: '待处理', type: 'bar', barMaxWidth: 40, data: units.map(u => u.pending || 0), itemStyle: { color: '#E6A23C' } },
+          { name: '超期', type: 'bar', barMaxWidth: 40, data: units.map(u => u.overdue || 0), itemStyle: { color: '#F56C6C' } }
+        ],
+        graphic: units.length === 0 ? [{
+          type: 'text', left: 'center', top: 'center',
+          style: { text: '暂无单位统计数', fontSize: 14, fill: '#909399', fontWeight: 'normal' }
+        }] : []
       })
     }
   } catch (e) {

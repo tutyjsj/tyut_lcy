@@ -486,10 +486,18 @@ const submitUrge = async () => {
   submitting.value = true
   try {
     const ids = urgeForm._ids || [urgeForm.id]
+    let successCount = 0, failCount = 0
     for (const id of ids) {
-      await urgeTask(id, { reason: urgeForm.reason })
+      try {
+        await urgeTask(id, { reason: urgeForm.reason })
+        successCount++
+      } catch { failCount++ }
     }
-    ElMessage.success('催办成功')
+    if (successCount > 0) {
+      ElMessage.success(`催办成功 ${successCount} 个任务` + (failCount > 0 ? `，${failCount} 个失败` : ''))
+    } else {
+      ElMessage.error('催办失败')
+    }
     urgeVisible.value = false
     selectedIds.value = []
     search()
@@ -520,10 +528,18 @@ const submitSupervise = async () => {
   submitting.value = true
   try {
     const ids = superviseForm._ids || [superviseForm.id]
+    let successCount = 0, failCount = 0
     for (const id of ids) {
-      await superviseTask(id, { reason: superviseForm.reason })
+      try {
+        await superviseTask(id, { reason: superviseForm.reason })
+        successCount++
+      } catch { failCount++ }
     }
-    ElMessage.success('督办成功')
+    if (successCount > 0) {
+      ElMessage.success(`督办成功 ${successCount} 个任务` + (failCount > 0 ? `，${failCount} 个失败` : ''))
+    } else {
+      ElMessage.error('督办失败')
+    }
     superviseVisible.value = false
     selectedIds.value = []
     search()
@@ -550,14 +566,21 @@ const showBatchRevoke = () => {
 }
 
 const submitRevoke = async () => {
-  await ElMessageBox.confirm('确认撤销所选任务？', '确认撤销', { type: 'warning' })
   submitting.value = true
   try {
     const ids = revokeForm._ids || [revokeForm.id]
+    let successCount = 0, failCount = 0
     for (const id of ids) {
-      await revokeTask(id, { reason: revokeForm.reason || '管理人员主动撤销' })
+      try {
+        await revokeTask(id, { reason: revokeForm.reason || '管理人员主动撤销' })
+        successCount++
+      } catch { failCount++ }
     }
-    ElMessage.success('撤销成功')
+    if (successCount > 0) {
+      ElMessage.success(`撤销成功 ${successCount} 个任务` + (failCount > 0 ? `，${failCount} 个失败` : ''))
+    } else {
+      ElMessage.error('撤销失败')
+    }
     revokeVisible.value = false
     selectedIds.value = []
     search()

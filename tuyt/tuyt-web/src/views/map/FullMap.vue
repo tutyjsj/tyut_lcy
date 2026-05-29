@@ -206,7 +206,12 @@
       </div>
 
       <!-- 地图容器 -->
-      <div id="full-map" class="map-container"></div>
+      <div id="full-map" class="map-container">
+        <div v-if="mapLoading" class="map-loading-full">
+          <div class="loading-spin"><el-icon class="is-loading" :size="48"><Loading /></el-icon></div>
+          <span class="loading-text-full">地图加载中，请稍候…</span>
+        </div>
+      </div>
 
       <!-- 右侧工具条 -->
       <div class="tool-panel">
@@ -448,10 +453,10 @@ import { useRouter } from 'vue-router'
 import {
   Search, Location, Connection, Crop, Minus, Link,
   Aim, Edit, RefreshLeft, Delete, FullScreen, MoreFilled, Select,
-  CircleCheck, Picture, VideoCamera, Grid
+  CircleCheck, Picture, VideoCamera, Grid, Loading
 } from '@element-plus/icons-vue'
 import { getEnterpriseList, getProblemList } from '@/api'
-import { createMap } from '@/utils/amap'
+import { createMap, preloadAMap } from '@/utils/amap'
 import { ElMessage } from 'element-plus'
 
 const router = useRouter()
@@ -459,6 +464,7 @@ const router = useRouter()
 // ==================== 地图实例 ====================
 let map = null
 let AMapModule = null
+const mapLoading = ref(true)
 const DEFAULT_CENTER = [112.55, 37.87] // 太原市中心
 const DEFAULT_ZOOM = 12
 
@@ -1791,7 +1797,10 @@ function startPersonnelSimulation(workers) {
 // ==================== 生命周期 ====================
 onMounted(async () => {
   try {
+    // 预加载：应用启动时在其他页面已调用一次 preloadAMap()，这里多调用一次确保 SDK 已加载
+    preloadAMap()
     map = await createMap('full-map', { zoom: DEFAULT_ZOOM, center: DEFAULT_CENTER })
+    mapLoading.value = false
     if (!map) return
     AMapModule = window.AMap
 
@@ -2064,7 +2073,16 @@ onBeforeUnmount(() => {
   flex: 1;
   min-width: 0;
   background: #e8e8e8;
+  position: relative;
 }
+.map-loading-full {
+  position: absolute; inset: 0; z-index: 100; display: flex;
+  flex-direction: column; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.9); gap: 14px;
+}
+.loading-spin { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.loading-text-full { font-size: 15px; color: #909399; letter-spacing: 1px; }
 
 /* ===== 右侧工具条（重新设计）===== */
 .tool-panel {

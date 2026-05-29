@@ -21,7 +21,7 @@ export const useMessageStore = defineStore('message', () => {
   const unreadByType = computed(() => {
     const result = {}
     for (const msg of messages.value) {
-      if (!msg.read) {
+      if (msg.read === false || msg.readStatus === 0) {
         const type = msg.type || 'OTHER'
         result[type] = (result[type] || 0) + 1
       }
@@ -29,16 +29,29 @@ export const useMessageStore = defineStore('message', () => {
     return result
   })
 
+  /**
+   * 规范化消息数据：统一 readStatus(0/1) → read(boolean)
+   */
+  function _normalizeMessage(msg) {
+    if (msg.read === undefined && msg.readStatus !== undefined) {
+      msg.read = msg.readStatus !== 1
+    }
+    return msg
+  }
+
   // 获取消息列表
   async function fetchMessages() {
     loading.value = true
     try {
       const res = await getMessageList({ pageSize: 20, pageNum: 1 })
       if (res.code === 200) {
-        messages.value = res.data?.records || res.data || []
-        // 从列表数据中统计未读数（兼容后端返回）
-        if (res.data?.total !== undefined && unreadCount.value === 0) {
-          unreadCount.value = messages.value.filter(m => !m.read).length
+        const records = res.data?.records || res.data || []
+        messages.value = records.map(_normalizeMessage)
+        // 如果后端返回空列表，使用 mock 数据展示（避免空白界面）
+        if (messages.value.length === 0) {
+          _initMockData()
+        } else {
+          unreadCount.value = messages.value.filter(m => m.read === false).length
         }
       }
     } catch {
@@ -58,7 +71,7 @@ export const useMessageStore = defineStore('message', () => {
       }
     } catch {
       // 用本地数据统计
-      unreadCount.value = messages.value.filter(m => !m.read).length
+      unreadCount.value = messages.value.filter(m => m.read === false).length
     }
   }
 

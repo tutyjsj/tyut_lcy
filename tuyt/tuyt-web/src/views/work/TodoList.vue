@@ -132,9 +132,19 @@
         <el-divider content-position="left" style="margin:8px 0">
           <span style="font-size:13px;font-weight:500">协作人员</span>
         </el-divider>
-        <div style="margin-bottom:8px">
+        <div style="margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
           <el-button type="primary" size="small" link @click="addCollaborator"><el-icon><Plus /></el-icon>添加同行人员</el-button>
-          <span v-if="handleForm.collaborators.length" style="margin-left:6px;color:#606266;font-size:12px">
+          <el-dropdown @command="quickAddCollaborator" trigger="click">
+            <el-button type="success" size="small" link><el-icon><User /></el-icon>快速添加</el-button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item v-for="u in presetCollaborators" :key="u.name" :command="u.name">
+                  {{ u.name }} <span style="color:#909399;font-size:11px">{{ u.role }}</span>
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+          <span v-if="handleForm.collaborators.length" style="color:#606266;font-size:12px">
             共 {{ handleForm.collaborators.length }} 人
           </span>
         </div>
@@ -238,7 +248,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Plus, Upload } from '@element-plus/icons-vue'
+import { Plus, Upload, User } from '@element-plus/icons-vue'
 import { getTodoList, getTaskDetail, processTask } from '@/api'
 import { taskTypeMap, taskTypeOptions, urgencyMap, urgencyTagType } from '@/utils/constants'
 
@@ -339,9 +349,25 @@ const resetHandleForm = () => {
   handleForm.rectifyDeadline = ''
   handleForm.productionStatus = ''
   handleForm.remark = ''
-  handleForm.collaborators = []
+  // 预填样本协作人员（2人默认选中，已到场）
+  handleForm.collaborators = [
+    { name: '张爱国', attended: true, enforceNo: '' },
+    { name: '李为民', attended: true, enforceNo: '' }
+  ]
   Object.keys(attachFiles).forEach(k => { attachFiles[k] = [] })
 }
+
+/** 预设协作人员样本（可从通讯录/人员列表加载） */
+const presetCollaborators = [
+  { name: '张爱国', role: '监察大队长' },
+  { name: '李为民', role: '副大队长' },
+  { name: '王守正', role: '执法队长' },
+  { name: '张大龙', role: '网格长' },
+  { name: '刘云',   role: '执法队员' },
+  { name: '王河',   role: '执法队员' },
+  { name: '赵雷',   role: '执法队员' },
+  { name: '孙强',   role: '执法队员' }
+]
 
 const openHandle = (row) => {
   currentRow.value = row
@@ -352,6 +378,15 @@ const openHandle = (row) => {
 /** 添加协作人 */
 const addCollaborator = () => {
   handleForm.collaborators.push({ name: '', attended: false, enforceNo: '' })
+}
+
+/** 快速添加预设协作人 */
+const quickAddCollaborator = (name) => {
+  if (handleForm.collaborators.some(c => c.name === name)) {
+    ElMessage.warning('该人员已在列表中')
+    return
+  }
+  handleForm.collaborators.push({ name, attended: true, enforceNo: '' })
 }
 
 /** 移除协作人 */
@@ -378,7 +413,8 @@ const removeFile = (type, idx) => {
 
 /** 跳转行政处罚 */
 const goToPenalty = () => {
-  ElMessage.info('跳转至行政处罚立案界面（功能开发中）')
+  handleVisible.value = false
+  router.push({ path: '/work/penalty', query: { taskId: currentRow.value.id } })
 }
 
 const submitHandle = async () => {

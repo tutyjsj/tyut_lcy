@@ -4,6 +4,11 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import './styles/global.scss'
+import { preloadAMap } from '@/utils/amap'
+
+// 应用启动后，在浏览器空闲时预加载高德地图 SDK（不阻塞首屏渲染）
+// 这样后续打开地图页面时，SDK 已经就绪，无需等待
+preloadAMap()
 
 // 按需注册项目中实际使用的 Element Plus 图标（避免全量注册 287 个图标）
 import {

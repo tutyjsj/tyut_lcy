@@ -15,6 +15,8 @@ import com.ruoyi.tuyt.business.grid.entity.GridEnterprise;
 import com.ruoyi.tuyt.business.grid.entity.GridInfo;
 import com.ruoyi.tuyt.business.grid.mapper.GridEnterpriseMapper;
 import com.ruoyi.tuyt.business.grid.service.IGridInfoService;
+import com.ruoyi.tuyt.business.message.entity.MessageNotification;
+import com.ruoyi.tuyt.business.message.service.IMessageNotificationService;
 import com.ruoyi.tuyt.business.problem.entity.EnvProblem;
 import com.ruoyi.tuyt.business.problem.mapper.EnvProblemMapper;
 import com.ruoyi.tuyt.business.system.service.ISysOrganizationService;
@@ -44,6 +46,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     private final GridEnterpriseMapper gridEnterpriseMapper;
     private final EnvProblemMapper envProblemMapper;
     private final ISysOrganizationService organizationService;
+    private final IMessageNotificationService messageNotificationService;
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -244,6 +247,25 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
                 + (reason != null && !reason.isBlank() ? "\n原因: " + reason : "");
         task.setTaskContent((task.getTaskContent() != null ? task.getTaskContent() : "") + log);
         updateById(task);
+
+        // 创建消息通知给任务处理人
+        Long currentUserId = LoginUserHolder.getUserId();
+        String currentUsername = LoginUserHolder.getUsername();
+        if (task.getHandlerId() != null && task.getHandlerId() > 0) {
+            MessageNotification msg = new MessageNotification();
+            msg.setType("URGE");
+            msg.setTitle("催办：" + (task.getTaskTitle() != null ? task.getTaskTitle() : "任务"));
+            msg.setContent("调度员" + (currentUsername != null ? currentUsername : "系统")
+                    + "催办您尽快完成【" + task.getTaskTitle() + "】（" + task.getTaskNo() + "）任务的处理"
+                    + (reason != null && !reason.isBlank() ? "，原因：" + reason : "，请立即处理。"));
+            msg.setSourceName(currentUsername);
+            msg.setSourceId(currentUserId);
+            msg.setTargetUserId(task.getHandlerId());
+            msg.setRelatedId(task.getId());
+            msg.setRelatedType("task");
+            msg.setReadStatus(0);
+            messageNotificationService.save(msg);
+        }
     }
 
     @Override
@@ -260,6 +282,25 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
                 + (reason != null && !reason.isBlank() ? "\n原因: " + reason : "");
         task.setTaskContent((task.getTaskContent() != null ? task.getTaskContent() : "") + log);
         updateById(task);
+
+        // 创建消息通知给任务处理人
+        Long currentUserId = LoginUserHolder.getUserId();
+        String currentUsername = LoginUserHolder.getUsername();
+        if (task.getHandlerId() != null && task.getHandlerId() > 0) {
+            MessageNotification msg = new MessageNotification();
+            msg.setType("SUPERVISE");
+            msg.setTitle("督办：" + (task.getTaskTitle() != null ? task.getTaskTitle() : "任务"));
+            msg.setContent("上级部门" + (currentUsername != null ? currentUsername : "系统")
+                    + "督办您对【" + task.getTaskTitle() + "】（" + task.getTaskNo() + "）任务进行限期处理"
+                    + (reason != null && !reason.isBlank() ? "，督办原因：" + reason : "，请尽快完成。"));
+            msg.setSourceName(currentUsername);
+            msg.setSourceId(currentUserId);
+            msg.setTargetUserId(task.getHandlerId());
+            msg.setRelatedId(task.getId());
+            msg.setRelatedType("task");
+            msg.setReadStatus(0);
+            messageNotificationService.save(msg);
+        }
     }
 
     @Override

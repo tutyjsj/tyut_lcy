@@ -9,8 +9,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @Tag(name = "巡查计划")
 @RestController
 @RequestMapping("/patrol-plan")
@@ -54,7 +52,8 @@ public class PatrolPlanController {
     @Operation(summary = "删除巡查计划")
     @DeleteMapping("/{id}")
     public R<Void> delete(@PathVariable Long id) {
-        taskInfoService.delete(List.of(id));
+        // 巡查计划状态为 ENABLED/DISABLED，不能走 taskInfoService.delete()（那个只允许DRAFT）
+        taskInfoService.removeById(id);
         R<Void> r = R.ok();
         r.setMessage("删除巡查计划成功，已派发的任务不受影响");
         return r;

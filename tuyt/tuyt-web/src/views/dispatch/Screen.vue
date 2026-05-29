@@ -14,7 +14,13 @@
         </div>
       </el-col>
       <el-col :span="12" style="height:100%">
-        <div class="panel map-panel"><div id="dispatch-map" style="width:100%;height:100%"></div></div>
+        <div class="panel map-panel">
+          <div v-if="mapLoading" class="map-loading">
+            <div class="loading-spin"><el-icon class="is-loading" :size="40"><Loading /></el-icon></div>
+            <span class="loading-text">地图加载中…</span>
+          </div>
+          <div id="dispatch-map" style="width:100%;height:100%"></div>
+        </div>
       </el-col>
       <el-col :span="6" style="height:100%">
         <div class="panel">
@@ -33,13 +39,14 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, onActivated } from 'vue'
-import { WarningFilled } from '@element-plus/icons-vue'
+import { WarningFilled, Loading } from '@element-plus/icons-vue'
 import { getProblemList, getEnterpriseList } from '@/api'
-import { createMap, addProblemMarkers, addEnterpriseMarkers } from '@/utils/amap'
+import { createMap, addProblemMarkers, addEnterpriseMarkers, preloadAMap } from '@/utils/amap'
 
 const pendingProblems = ref([])
 const alerts = ref([])
 const dataLoading = ref(false)
+const mapLoading = ref(true)
 let map = null, AMapModule = null, infoWindow = null
 let currentMarkers = []
 
@@ -112,11 +119,14 @@ onBeforeUnmount(() => { if (map) map.destroy() })
 
 onMounted(async () => {
   try {
+    preloadAMap()
     map = await createMap('dispatch-map', { zoom: 12, center: [112.55, 37.87] })
+    mapLoading.value = false
     if (!map) return
     AMapModule = window.AMap
     fetchData()
   } catch (e) {
+    mapLoading.value = false
     console.error('调度大屏：地图初始化失败', e)
   }
 })
@@ -130,10 +140,18 @@ onActivated(() => {
 <style scoped>
 .screen-container { height: calc(100vh - 120px); }
 .panel { background:#fff; border-radius:8px; padding:16px; height:100%; overflow-y:auto; }
-.panel.map-panel { padding:0; }
+.panel.map-panel { padding:0; position:relative; }
 .panel-title { font-size:15px; font-weight:600; color:#303133; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid #ebeef5; }
 .pending-item { padding:8px; border-radius:4px; margin-bottom:8px; cursor:pointer; display:flex; align-items:center; }
 .pending-item:hover { background:#f5f7fa; }
 .alert-item { padding:10px 8px; border-left:3px solid #F56C6C; margin-bottom:10px; background:#fef0f0; display:flex; align-items:center; gap:8px; font-size:13px; }
 .empty-tip { color:#909399; font-size:13px; text-align:center; padding:24px 0; }
+.map-loading {
+  position:absolute; inset:0; z-index:10; display:flex;
+  flex-direction:column; align-items:center; justify-content:center;
+  background:rgba(255,255,255,0.85); gap:12px;
+}
+.loading-spin { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.loading-text { font-size:14px; color:#909399; }
 </style>

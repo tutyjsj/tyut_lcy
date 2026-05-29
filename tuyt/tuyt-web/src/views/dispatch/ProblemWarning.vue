@@ -96,6 +96,36 @@
       </el-table>
       <el-pagination style="margin-top:16px;display:flex;justify-content:flex-end" v-model:current-page="query.pageNum" v-model:page-size="query.pageSize" :page-sizes="[10,20,50,100]" :total="pagingTotal" layout="total, sizes, prev, pager, next" @current-change="onPageChange" @size-change="onPageChange(true)" />
     </div>
+
+    <!-- 批量派发对话框 -->
+    <el-dialog v-model="dispatchDialogVisible" title="批量派发问题" width="550px" :close-on-click-modal="false">
+      <el-alert type="warning" :closable="false" show-icon style="margin-bottom:16px">
+        已选择 <b style="color:#F56C6C">{{ selectedIds.length }}</b> 个问题，将为每个问题创建一个整改任务并派发。
+      </el-alert>
+      <el-form label-width="90px" :model="dispatchForm">
+        <el-form-item label="紧急程度">
+          <el-select v-model="dispatchForm.urgency" style="width:100%">
+            <el-option label="一般" value="NORMAL" />
+            <el-option label="紧急" value="URGENT" />
+            <el-option label="非常紧急" value="CRITICAL" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="处理期限">
+          <el-date-picker v-model="dispatchForm.deadline" type="datetime" placeholder="选择截止时间" style="width:100%" value-format="YYYY-MM-DD HH:mm:ss" />
+        </el-form-item>
+        <el-form-item label="处理单位">
+          <el-select v-model="dispatchForm.gridId" style="width:100%" clearable placeholder="请选择处理网格（可选）">
+            <el-option v-for="g in cityGrids" :key="g.id" :label="g.gridName" :value="g.id" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="dispatchDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="confirmBatchDispatch" :loading="dispatchSubmitting">
+          确认派发 {{ selectedIds.length }} 个任务
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -103,7 +133,7 @@
 import { ref, reactive, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getProblemList, getGridList, updateProblem, getWarningStatistics } from '@/api'
+import { getProblemList, getGridList, updateProblem, getWarningStatistics, batchDispatchProblems } from '@/api'
 import { pollutionTypeOptions } from '@/utils/constants'
 import { createLineChart, createRingChart } from '@/utils/echarts'
 
@@ -309,8 +339,41 @@ const ignoreWarning = (row) => {
 
 const batchDispatch = () => {
   if (selectedIds.value.length === 0) { ElMessage.warning('请先选择问题'); return }
-  ElMessage.success(`已选择${selectedIds.value.length}个问题，跳转至任务调度页面`)
-  router.push({ path: '/dispatch/task', query: { problemIds: selectedIds.value.join(',') } })
+  dispatchForm.value = { urgency: 'NORMAL', deadline: '', gridId: null }
+  dispatchDialogVisible.value = true
+}
+
+// ===== 批量派发弹框 =====
+const dispatchDialogVisible = ref(false)
+const dispatchSubmitting = ref(false)
+const dispatchForm = ref({ urgency: 'NORMAL', deadline: '', gridId: null })
+const dispatchGrids = ref([])
+
+const clearCenterSearch = () => {
+  query.problemLevel = ''; query.pollutionType = ''; query.gridId = null; query.overdueType = ''
+  activeCard.value = ''
+  search()
+}
+
+const confirmBatchDispatch = async () => {
+  dispatchSubmitting.value = true
+  try {
+    const params = {
+      problemIds: selectedIds.value,
+      urgency: dispatchForm.value.urgency,
+      deadline: dispatchForm.value.deadline || null,
+      gridId: dispatchForm.value.gridId || null
+    }
+    const res = await batchDispatchProblems(params)
+    const data = res.data || {}
+    ElMessage.success(`批量派发完成：成功 ${data.success || 0} 个，失败 ${data.fail || 0} 个`)
+    dispatchDialogVisible.value = false
+    clearCenterSearch()
+  } catch (e) {
+    ElMessage.error('批量派发失败: ' + (e?.response?.data?.message || e?.message || '请稍后重试'))
+  } finally {
+    dispatchSubmitting.value = false
+  }
 }
 
 // ===== 图表（基于后端返回的全量统计数据，随筛选条件变化） =====

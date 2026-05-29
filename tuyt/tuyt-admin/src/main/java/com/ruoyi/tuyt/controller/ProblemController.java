@@ -4,6 +4,8 @@ import com.ruoyi.tuyt.business.problem.entity.EnvProblem;
 import com.ruoyi.tuyt.business.problem.entity.EnvProblemLog;
 import com.ruoyi.tuyt.business.problem.service.IEnvProblemLogService;
 import com.ruoyi.tuyt.business.problem.service.IEnvProblemService;
+import com.ruoyi.tuyt.business.task.entity.TaskInfo;
+import com.ruoyi.tuyt.business.task.service.ITaskInfoService;
 import com.ruoyi.tuyt.common.result.PageResult;
 import com.ruoyi.tuyt.common.result.R;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,8 +13,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Tag(name = "环境问题管理")
@@ -23,6 +25,7 @@ public class ProblemController {
 
     private final IEnvProblemService envProblemService;
     private final IEnvProblemLogService envProblemLogService;
+    private final ITaskInfoService taskInfoService;
 
     @Operation(summary = "分页查询问题列表")
     @GetMapping("/list")
@@ -49,7 +52,7 @@ public class ProblemController {
     }
 
     @Operation(summary = "新增问题")
-    @PostMapping("/")
+    @PostMapping
     public R<Void> add(@RequestBody EnvProblem problem) {
         envProblemService.add(problem);
         R<Void> r = R.ok();
@@ -135,6 +138,52 @@ public class ProblemController {
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "3") Integer pageSize) {
         return R.ok(envProblemService.ranking(keyword, sort, parentId, timeRange, pageNum, pageSize));
+    }
+
+    @Operation(summary = "批量派发问题（为选中问题一键创建调度任务）")
+    @PostMapping("/batch-dispatch")
+    public R<Map<String, Object>> batchDispatch(@RequestBody Map<String, Object> params) {
+        List<Long> problemIds = convertToLongList(params.get("problemIds"));
+        int success = 0, fail = 0;
+        for (Long problemId : problemIds) {
+            try {
+                EnvProblem problem = envProblemService.getById(problemId);
+                if (problem == null) { fail++; continue; }
+                TaskInfo task = new TaskInfo();
+                task.setTaskTitle("处理" + (problem.getEnterpriseName() != null ? problem.getEnterpriseName() : "") + " - "
+                        + (problem.getProblemDesc() != null ? problem.getProblemDesc() : "环境问题"));
+                // 截断标题（数据库限制255字）
+                if (task.getTaskTitle() != null && task.getTaskTitle().length() > 255) {
+                    task.setTaskTitle(task.getTaskTitle().substring(0, 252) + "...");
+                }
+                task.setTaskType("RECTIFY");
+                task.setUrgency(params.get("urgency") != null ? params.get("urgency").toString() : "NORMAL");
+                task.setDeadline(params.get("deadline") != null
+                        ? LocalDateTime.parse(params.get("deadline").toString().replace("T", " ").substring(0, 19),
+                                java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                        : LocalDateTime.now().plusDays(7));
+                Object gridIdVal = params.get("gridId");
+                if (gridIdVal instanceof Number) task.setGridId(((Number) gridIdVal).longValue());
+                task.setTaskContent("现场核查处理：" + (problem.getProblemDesc() != null ? problem.getProblemDesc() : "") +
+                        "\n污染类型：" + (problem.getPollutionType() != null ? problem.getPollutionType() : "") +
+                        "\n事发企业：" + (problem.getEnterpriseName() != null ? problem.getEnterpriseName() : "") +
+                        "\n处理单位：" + (problem.getAreaName() != null ? problem.getAreaName() : ""));
+                task.setProblemId(problemId);
+                task.setStatus("DISPATCHED");
+                taskInfoService.dispatch(task);
+                // 更新问题状态为处理中
+                problem.setHandleStatus("PROCESSING");
+                envProblemService.updateById(problem);
+                success++;
+            } catch (Exception e) {
+                fail++;
+            }
+        }
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", success);
+        result.put("fail", fail);
+        result.put("total", problemIds.size());
+        return R.ok(result);
     }
 
     @Operation(summary = "获取问题动态日志")

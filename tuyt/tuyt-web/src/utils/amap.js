@@ -16,6 +16,19 @@ window._AMapSecurityConfig = {
 let AMapPromise = null
 
 /**
+ * 预加载高德地图 SDK（不阻塞主线程，适合在应用初始化时调用）
+ * 使用 requestIdleCallback 在浏览器空闲时加载，避免影响首屏渲染
+ */
+export function preloadAMap() {
+  if (window.AMap || AMapPromise) return
+  const schedule = window.requestIdleCallback || ((fn) => setTimeout(fn, 200))
+  schedule(() => {
+    console.log('[AMap] 后台预加载 SDK...')
+    loadAMap()
+  })
+}
+
+/**
  * 加载高德地图 JSAPI（单例，避免重复加载）
  * @returns {Promise<typeof AMap>}
  */
@@ -29,7 +42,13 @@ export function loadAMap() {
     const plugin = 'AMap.PolyEditor,AMap.Geocoder,AMap.DistrictSearch,AMap.Scale,AMap.ToolBar,AMap.RangingTool,AMap.MouseTool,AMap.AutoComplete,AMap.PlaceSearch,AMap.CircleEditor,AMap.Geolocation'
     const script = document.createElement('script')
     script.src = `https://webapi.amap.com/maps?v=${AMAP_VERSION}&key=${AMAP_KEY}&plugin=${plugin}`
+    // 设置超时（10秒）
+    const timeout = setTimeout(() => {
+      console.error('[AMap] SDK 加载超时（10秒）')
+      reject(new Error('高德地图加载超时'))
+    }, 10000)
     script.onload = () => {
+      clearTimeout(timeout)
       if (window.AMap) {
         console.log('[AMap] SDK 加载成功 ✓')
       } else {
@@ -38,6 +57,7 @@ export function loadAMap() {
       resolve(window.AMap)
     }
     script.onerror = (e) => {
+      clearTimeout(timeout)
       console.error('[AMap] SDK 加载失败 ✗  请检查:', {
         'Key 是否正确': true,
         'serviceHost 是否配置': !window._AMapSecurityConfig?.serviceHost ? '未配置（代理转发必须配置 serviceHost）' : '已配置',

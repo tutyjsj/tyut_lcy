@@ -6,6 +6,11 @@
         <el-tree :data="treeData" :props="treeProps" node-key="id" default-expand-all @node-click="onNodeClick" style="background:transparent" />
       </div>
       <div class="map-right">
+        <!-- 地图加载骨架 -->
+        <div v-if="mapLoading" class="map-loading">
+          <div class="loading-spin"><el-icon class="is-loading" :size="40"><Loading /></el-icon></div>
+          <span class="loading-text">地图加载中…</span>
+        </div>
         <div id="grid-map" style="width:100%;height:100%"></div>
       </div>
     </div>
@@ -14,11 +19,13 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { Loading } from '@element-plus/icons-vue'
 import { getGridTree, getGridEnterprises } from '@/api'
-import { createMap, drawGridPolygon, addProblemMarkers } from '@/utils/amap'
+import { createMap, drawGridPolygon, addProblemMarkers, preloadAMap } from '@/utils/amap'
 
 const treeData = ref([])
 const treeProps = { label: 'gridName', children: 'children' }
+const mapLoading = ref(true)
 let map = null, AMapModule = null, currentPolygon = null, currentMarkers = []
 const polygonColorMap = { CITY: ['#409EFF', '#337ECC'], DISTRICT: ['#67C23A', '#529B2E'], TOWN: ['#E6A23C', '#B88230'] }
 
@@ -86,11 +93,15 @@ onBeforeUnmount(() => { if (map) map.destroy() })
 onMounted(async () => {
   try {
     loadTree()
+    // 在后台预加载地图SDK（应用启动时调用一次即可）
+    preloadAMap()
     map = await createMap('grid-map', { zoom: 11, center: [112.55, 37.87] })
+    mapLoading.value = false
     if (!map) return
     AMapModule = window.AMap
     map.addControl(new AMapModule.Scale())
   } catch (e) {
+    mapLoading.value = false
     console.error('网格地图：初始化失败', e)
   }
 })
@@ -100,5 +111,13 @@ onMounted(async () => {
 .grid-map-container { height: calc(100vh - 120px); display: flex; flex-direction: column; }
 .map-wrapper { flex: 1; display: flex; gap: 0; border-radius: 8px; overflow: hidden; }
 .map-left { width: 240px; background: #fff; padding: 12px; overflow-y: auto; }
-.map-right { flex: 1; background: #e8e8e8; }
+.map-right { flex: 1; background: #e8e8e8; position: relative; }
+.map-loading {
+  position: absolute; inset: 0; z-index: 10; display: flex;
+  flex-direction: column; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.85); gap: 12px;
+}
+.loading-spin { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.loading-text { font-size: 14px; color: #909399; }
 </style>

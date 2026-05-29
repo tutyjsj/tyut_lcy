@@ -29,6 +29,12 @@ export const asyncRoutes = [
         name: 'MyDone',
         component: () => import('@/views/work/DoneList.vue'),
         meta: { title: '我的完结件' }
+      },
+      {
+        path: '/work/penalty',
+        name: 'PenaltyCase',
+        component: () => import('@/views/work/PenaltyCase.vue'),
+        meta: { title: '行政处罚' }
       }
     ]
   },
@@ -258,6 +264,20 @@ export const asyncRoutes = [
         name: 'FullMap',
         component: () => import('@/views/map/FullMap.vue'),
         meta: { title: '电子地图' }
+      }
+    ]
+  },
+  {
+    path: '/message',
+    component: Layout,
+    redirect: '/message/center',
+    meta: { title: '消息中心', icon: 'Bell', hidden: true },
+    children: [
+      {
+        path: '/message/center',
+        name: 'MessageCenter',
+        component: () => import('@/views/message/MessageCenter.vue'),
+        meta: { title: '消息中心' }
       }
     ]
   }

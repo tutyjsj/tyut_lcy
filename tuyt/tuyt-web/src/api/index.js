@@ -106,6 +106,10 @@ export function getProblemMap(params) {
 export function getProblemLogs(id) {
   return request.get(`/problem/${id}/logs`)
 }
+/** 批量派发问题（为选中问题一键创建任务） */
+export function batchDispatchProblems(data) {
+  return request.post('/problem/batch-dispatch', data)
+}
 
 // ===== 任务调度 =====
 export function getTaskList(params) {
@@ -282,4 +286,34 @@ export function markMessageRead(ids) {
 /** 标记全部已读 */
 export function markAllRead() {
   return request.put('/message/read-all')
+}
+
+// ===== 行政处罚 =====
+/** 处罚案件列表 */
+export function getPenaltyList(params) {
+  return request.get('/penalty/list', { params })
+}
+/** 案件详情 */
+export function getPenaltyDetail(id) {
+  return request.get(`/penalty/${id}`)
+}
+/** 立案 */
+export function filePenalty(data) {
+  return request.post('/penalty/file', data)
+}
+/** 编辑案件 */
+export function updatePenalty(id, data) {
+  return request.put(`/penalty/${id}`, data)
+}
+/** 裁决 */
+export function rulePenalty(id, rulingResult) {
+  return request.post(`/penalty/${id}/rule`, { rulingResult })
+}
+/** 结案 */
+export function closePenalty(id) {
+  return request.put(`/penalty/${id}/close`)
+}
+/** 删除案件 */
+export function deletePenalty(ids) {
+  return request.delete('/penalty/batch', { data: ids })
 }

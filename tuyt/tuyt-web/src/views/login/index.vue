@@ -6,12 +6,12 @@
         <h2>环境网格化综合管理系统</h2>
         <p>Environmental Grid Management System</p>
       </div>
-      <el-form ref="formRef" :model="form" :rules="rules" size="large">
+      <el-form ref="formRef" :model="form" :rules="rules" size="large" autocomplete="off">
         <el-form-item prop="username">
-          <el-input v-model="form.username" placeholder="用户名"><template #prefix><el-icon><User /></el-icon></template></el-input>
+          <el-input v-model="form.username" placeholder="用户名" autocomplete="off"><template #prefix><el-icon><User /></el-icon></template></el-input>
         </el-form-item>
         <el-form-item prop="password">
-          <el-input v-model="form.password" type="password" placeholder="密码" show-password @keyup.enter="handleLogin"><template #prefix><el-icon><Lock /></el-icon></template></el-input>
+          <el-input v-model="form.password" type="password" placeholder="密码" show-password autocomplete="new-password" @keyup.enter="handleLogin"><template #prefix><el-icon><Lock /></el-icon></template></el-input>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" :loading="loading" style="width:100%" @click="handleLogin">登 录</el-button>
@@ -33,7 +33,7 @@ const route = useRoute()
 const userStore = useUserStore()
 const loading = ref(false)
 const formRef = ref(null)
-const form = reactive({ username: 'admin', password: '123456' })
+const form = reactive({ username: '', password: '' })
 const rules = {
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }]

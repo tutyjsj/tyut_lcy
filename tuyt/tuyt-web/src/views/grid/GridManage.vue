@@ -23,29 +23,62 @@
       <el-pagination style="margin-top:16px;display:flex;justify-content:flex-end" v-model:current-page="query.pageNum" v-model:page-size="query.pageSize" :page-sizes="[10,20,50,100]" :total="total" layout="total, sizes, prev, pager, next" @current-change="fetch" @size-change="fetch" />
     </div>
 
-    <el-dialog v-model="dialogVisible" :title="isEdit?'编辑网格':'新建网格'" width="600px">
-      <el-form :model="form" label-width="110px">
-        <el-form-item label="网格名称"><el-input v-model="form.gridName" /></el-form-item>
-        <el-form-item label="网格级别"><el-select v-model="form.gridLevel" style="width:100%"><el-option label="市级" :value="1" /><el-option label="区县级" :value="2" /><el-option label="乡镇/街道" :value="3" /></el-select></el-form-item>
-        <el-form-item label="上级网格"><el-select v-model="form.parentId" style="width:100%" clearable><el-option v-for="g in list" :key="g.id" :label="g.gridName" :value="g.id" /></el-select></el-form-item>
-        <el-form-item label="责任单位ID"><el-input v-model="form.orgId" /></el-form-item>
-        <el-form-item label="分管领导"><el-input v-model="form.leader" /></el-form-item>
-        <el-form-item label="网格责任人"><el-input v-model="form.responsiblePerson" /></el-form-item>
-        <el-form-item label="联系电话"><el-input v-model="form.responsiblePhone" /></el-form-item>
+    <el-dialog v-model="dialogVisible" :title="isEdit?'编辑网格':'新建网格'" width="600px" destroy-on-close>
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="110px">
+        <el-form-item label="网格名称" prop="gridName">
+          <el-input v-model="form.gridName" placeholder="请输入网格名称" />
+        </el-form-item>
+        <el-form-item label="网格级别" prop="gridLevel">
+          <el-select v-model="form.gridLevel" style="width:100%" placeholder="请选择网格级别">
+            <el-option label="市级" :value="1" /><el-option label="区县级" :value="2" /><el-option label="乡镇/街道" :value="3" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="上级网格">
+          <el-select v-model="form.parentId" style="width:100%" clearable placeholder="请选择上级网格（可选）">
+            <el-option v-for="g in parentGridList" :key="g.id" :label="g.gridName" :value="g.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="责任单位ID" prop="orgId">
+          <el-input v-model="form.orgId" placeholder="请输入责任单位ID" />
+        </el-form-item>
+        <el-form-item label="分管领导" prop="leader">
+          <el-input v-model="form.leader" placeholder="请输入分管领导姓名" />
+        </el-form-item>
+        <el-form-item label="网格责任人" prop="responsiblePerson">
+          <el-input v-model="form.responsiblePerson" placeholder="请输入网格责任人姓名" />
+        </el-form-item>
+        <el-form-item label="联系电话" prop="responsiblePhone">
+          <el-input v-model="form.responsiblePhone" placeholder="请输入联系电话" />
+        </el-form-item>
       </el-form>
-      <template #footer><el-button @click="dialogVisible=false">取消</el-button><el-button type="primary" @click="submitForm">确定</el-button></template>
+      <template #footer><el-button @click="dialogVisible=false">取消</el-button><el-button type="primary" :loading="submitting" @click="submitForm">确定</el-button></template>
     </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getGridList, createGrid, updateGrid, deleteGrid } from '@/api'
+import { getGridList, getGridTree, createGrid, updateGrid, deleteGrid } from '@/api'
 
-const loading = ref(false), list = ref([]), total = ref(0), dialogVisible = ref(false), isEdit = ref(false)
+const loading = ref(false), submitting = ref(false), list = ref([]), allGrids = ref([]), total = ref(0), dialogVisible = ref(false), isEdit = ref(false)
+const formRef = ref(null)
 const query = reactive({ pageNum: 1, pageSize: 10 })
-const form = reactive({ id: null, gridName: '', gridLevel: '', parentId: null, orgId: '', leader: '', responsiblePerson: '', responsiblePhone: '' })
+const form = reactive({ id: null, gridName: '', gridLevel: null, parentId: null, orgId: null, leader: '', responsiblePerson: '', responsiblePhone: '' })
+
+const rules = {
+  gridName: [{ required: true, message: '请输入网格名称', trigger: 'blur' }],
+  gridLevel: [{ required: true, message: '请选择网格级别', trigger: 'change' }],
+  orgId: [{ required: true, message: '请输入责任单位ID', trigger: 'blur' }],
+  leader: [{ required: true, message: '请输入分管领导', trigger: 'blur' }],
+  responsiblePerson: [{ required: true, message: '请输入网格责任人', trigger: 'blur' }],
+  responsiblePhone: [{ required: true, message: '请输入联系电话', trigger: 'blur' }]
+}
+
+// 上级网格：排除当前编辑的网格自身
+const parentGridList = computed(() => {
+  return allGrids.value.filter(g => g.id !== form.id)
+})
 
 const fetch = async () => {
   loading.value = true
@@ -59,14 +92,48 @@ const fetch = async () => {
   }
   finally { loading.value = false }
 }
-const openDialog = (row) => { isEdit.value = !!row; Object.assign(form, row||{id:null,gridName:'',gridLevel:'',parentId:null,orgId:'',leader:'',responsiblePerson:'',responsiblePhone:''}); dialogVisible.value = true }
-const submitForm = async () => {
+
+const refreshAll = async () => {
   try {
-    isEdit.value ? await updateGrid(form.id, form) : await createGrid(form)
+    const r = await getGridTree()
+    allGrids.value = r.data || []
+  } catch { allGrids.value = [] }
+}
+
+const resetForm = () => ({ id: null, gridName: '', gridLevel: null, parentId: null, orgId: null, leader: '', responsiblePerson: '', responsiblePhone: '' })
+
+const openDialog = (row) => {
+  if (row) {
+    isEdit.value = true
+    Object.assign(form, {
+      id: row.id, gridName: row.gridName || '', gridLevel: row.gridLevel ?? null,
+      parentId: row.parentId ?? null, orgId: row.orgId ?? null,
+      leader: row.leader || '', responsiblePerson: row.responsiblePerson || '',
+      responsiblePhone: row.responsiblePhone || ''
+    })
+  } else {
+    isEdit.value = false
+    Object.assign(form, resetForm())
+  }
+  dialogVisible.value = true
+  setTimeout(() => formRef.value?.clearValidate(), 0)
+}
+
+const submitForm = async () => {
+  try { await formRef.value?.validate() } catch { return }
+  submitting.value = true
+  try {
+    const data = { ...form, orgId: form.orgId ? Number(form.orgId) : null }
+    isEdit.value ? await updateGrid(data.id, data) : await createGrid(data)
     ElMessage.success(isEdit.value ? '修改成功' : '新建成功')
     dialogVisible.value = false
+    refreshAll()
     fetch()
-  } catch { ElMessage.error('操作失败') }
+  } catch (e) {
+    ElMessage.error(e?.response?.data?.message || '操作失败')
+  } finally {
+    submitting.value = false
+  }
 }
 const handleDelete = (row) => {
   ElMessageBox.confirm(
@@ -98,7 +165,10 @@ const handleDelete = (row) => {
     catch { ElMessage.error('删除失败') }
   }).catch(() => {})
 }
-onMounted(fetch)
+onMounted(() => {
+  fetch()
+  refreshAll()
+})
 </script>
 
 <style scoped>

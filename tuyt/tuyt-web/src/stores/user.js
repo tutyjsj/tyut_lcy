@@ -6,8 +6,8 @@ import router from '@/router'
 
 export const useUserStore = defineStore('user', () => {
   const token = ref(getToken() || '')
-  const username = ref(localStorage.getItem('tuyt_username') || '')
-  const realName = ref(localStorage.getItem('tuyt_realname') || '')
+  const username = ref(sessionStorage.getItem('tuyt_username') || '')
+  const realName = ref(sessionStorage.getItem('tuyt_realname') || '')
   const roles = ref([])
 
   const login = async (loginForm) => {
@@ -16,13 +16,16 @@ export const useUserStore = defineStore('user', () => {
         username: loginForm.username,
         password: loginForm.password
       })
-      token.value = res.data.token
-      username.value = res.data.username
-      realName.value = res.data.realName
-      roles.value = res.data.roles || []
-      setToken(res.data.token)
-      localStorage.setItem('tuyt_username', res.data.username)
-      localStorage.setItem('tuyt_realname', res.data.realName)
+      // 后端返回 { data: { token, userInfo: { username, realName, ... } } }
+      const data = res.data
+      const info = data.userInfo || data
+      token.value = data.token
+      username.value = info.username || ''
+      realName.value = info.realName || info.username || ''
+      roles.value = info.roles || []
+      setToken(data.token)
+      sessionStorage.setItem('tuyt_username', info.username || '')
+      sessionStorage.setItem('tuyt_realname', info.realName || info.username || '')
       return true
     } catch {
       return false
@@ -35,8 +38,8 @@ export const useUserStore = defineStore('user', () => {
     realName.value = ''
     roles.value = []
     removeToken()
-    localStorage.removeItem('tuyt_username')
-    localStorage.removeItem('tuyt_realname')
+    sessionStorage.removeItem('tuyt_username')
+    sessionStorage.removeItem('tuyt_realname')
     router.push('/login')
   }
 

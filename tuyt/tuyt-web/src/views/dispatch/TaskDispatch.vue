@@ -544,10 +544,21 @@ const confirmBatchUrge = async () => {
     await batchReasonFormRef.value.validate()
   } catch { return }
   try {
-    for (const id of selectedRows.value.map(r => r.id)) {
-      await urgeTask(id, { reason: reasonForm.reason.trim() })
+    let successCount = 0, failCount = 0
+    const ids = selectedRows.value.map(r => r.id)
+    for (const id of ids) {
+      try {
+        await urgeTask(id, { reason: reasonForm.reason.trim() })
+        successCount++
+      } catch {
+        failCount++
+      }
     }
-    ElMessage.success(`已批量催办 ${selectedRows.value.length} 个任务`)
+    if (successCount > 0) {
+      ElMessage.success(`已批量催办 ${successCount} 个任务` + (failCount > 0 ? `，${failCount} 个失败` : ''))
+    } else {
+      ElMessage.error(`批量催办失败，${failCount} 个任务均未成功`)
+    }
     batchUrgeVisible.value = false
     search()
   } catch { ElMessage.error('操作失败') }

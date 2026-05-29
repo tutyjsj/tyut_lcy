@@ -42,7 +42,7 @@ public class GridController {
     }
 
     @Operation(summary = "新增网格")
-    @PostMapping("/")
+    @PostMapping
     public R<Void> add(@RequestBody GridInfo gridInfo) {
         gridInfoService.add(gridInfo);
         R<Void> r = R.ok();
