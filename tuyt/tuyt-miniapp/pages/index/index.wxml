@@ -1,0 +1,70 @@
+<!-- 首页 -->
+<view class="container">
+  <!-- 头部 -->
+  <view class="header-card">
+    <view class="header-top">
+      <view class="user-info">
+        <text class="greeting">你好，{{userName}}</text>
+        <text class="role-tag">{{roleName}}</text>
+      </view>
+      <view class="bell-area" bindtap="goMessages">
+        <text class="bell-icon">🔔</text>
+        <view wx:if="{{unreadCount>0}}" class="badge">{{unreadCount>99?'99+':unreadCount}}</view>
+      </view>
+    </view>
+    <view class="date-text">{{today}}</view>
+  </view>
+
+  <!-- 统计卡片 -->
+  <view class="stats-row">
+    <view class="stat-card stat-orange" bindtap="goTodo">
+      <text class="stat-num">{{stats.pending||0}}</text>
+      <text class="stat-label">待处理</text>
+    </view>
+    <view class="stat-card stat-blue" bindtap="goTransfer">
+      <text class="stat-num">{{stats.processing||0}}</text>
+      <text class="stat-label">处理中</text>
+    </view>
+    <view class="stat-card stat-green" bindtap="goDone">
+      <text class="stat-num">{{stats.done||0}}</text>
+      <text class="stat-label">已完成</text>
+    </view>
+  </view>
+
+  <!-- 快捷功能 -->
+  <view class="section-title">快捷功能</view>
+  <view class="quick-grid">
+    <view class="quick-item" bindtap="goReport">
+      <view class="quick-icon q-blue">📝</view>
+      <text class="quick-text">问题上报</text>
+    </view>
+    <view class="quick-item" bindtap="goTodo">
+      <view class="quick-icon q-orange">📋</view>
+      <text class="quick-text">待办任务</text>
+    </view>
+    <view class="quick-item" bindtap="goEnterprises">
+      <view class="quick-icon q-green">🏭</view>
+      <text class="quick-text">企业查询</text>
+    </view>
+    <view class="quick-item" bindtap="goPatrol">
+      <view class="quick-icon q-purple">🔍</view>
+      <text class="quick-text">巡查计划</text>
+    </view>
+  </view>
+
+  <!-- 最近问题 -->
+  <view class="section-title">最近问题 <text class="more" bindtap="goProblems">更多 ›</text></view>
+  <view wx:if="{{recentProblems.length===0}}" class="empty">
+    <text class="empty-text">暂无问题</text>
+  </view>
+  <view wx:for="{{recentProblems}}" wx:key="id" class="problem-item" bindtap="goProblemDetail" data-id="{{item.id}}">
+    <view class="problem-row1">
+      <text class="problem-desc ellipsis">{{item.problemDesc}}</text>
+      <text class="tag {{item.statusClass}}">{{item.statusLabel}}</text>
+    </view>
+    <view class="problem-row2">
+      <text class="problem-enterprise ellipsis">{{item.enterpriseName}}</text>
+      <text class="problem-time">{{item.alarmTime}}</text>
+    </view>
+  </view>
+</view>

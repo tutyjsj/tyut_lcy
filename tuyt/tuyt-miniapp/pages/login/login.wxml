@@ -1,0 +1,26 @@
+<!-- 登录页 -->
+<view class="login-page">
+  <view class="login-header">
+    <view class="logo-area">
+      <view class="logo-icon">🌍</view>
+      <text class="app-name">环境网格化管理</text>
+      <text class="app-sub">大同市生态环境综合管理平台</text>
+    </view>
+  </view>
+  <view class="login-form">
+    <view class="input-group">
+      <view class="input-icon">👤</view>
+      <input class="input-field" placeholder="请输入账号" value="{{username}}" bindinput="onUsernameInput" />
+    </view>
+    <view class="input-group">
+      <view class="input-icon">🔒</view>
+      <input class="input-field" type="password" placeholder="请输入密码" value="{{password}}" bindinput="onPasswordInput" />
+    </view>
+    <button class="login-btn" bindtap="handleLogin" loading="{{loading}}" disabled="{{loading}}">
+      {{loading ? '登录中...' : '登 录'}}
+    </button>
+    <view class="demo-hint">
+      <text>演示账号：admin / 123456</text>
+    </view>
+  </view>
+</view>

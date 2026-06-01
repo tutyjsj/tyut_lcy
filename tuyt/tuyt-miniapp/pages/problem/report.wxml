@@ -1,0 +1,47 @@
+<!-- 问题上报 -->
+<view class="container">
+  <view class="card">
+    <view class="form-group">
+      <view class="form-label"><text class="required">*</text>事发企业</view>
+      <input class="form-input" placeholder="请输入企业名称" value="{{enterpriseName}}" bindinput="onInput" data-field="enterpriseName" />
+    </view>
+    <view class="form-group">
+      <view class="form-label"><text class="required">*</text>问题描述</view>
+      <textarea class="form-textarea" placeholder="请详细描述环境问题情况" value="{{problemDesc}}" bindinput="onInput" data-field="problemDesc" maxlength="500" />
+    </view>
+    <view class="form-group">
+      <view class="form-label"><text class="required">*</text>污染类型</view>
+      <picker mode="selector" range="{{typeOptions}}" range-key="label" bindchange="onTypeChange">
+        <view class="form-picker">{{selectedTypeLabel || '请选择污染类型'}} ▼</view>
+      </picker>
+    </view>
+    <view class="form-group">
+      <view class="form-label"><text class="required">*</text>问题等级</view>
+      <picker mode="selector" range="{{levelOptions}}" range-key="label" bindchange="onLevelChange">
+        <view class="form-picker">{{selectedLevelLabel || '请选择问题等级'}} ▼</view>
+      </picker>
+    </view>
+    <view class="form-group">
+      <view class="form-label"><text class="required">*</text>问题来源</view>
+      <picker mode="selector" range="{{sourceOptions}}" range-key="label" bindchange="onSourceChange">
+        <view class="form-picker">{{selectedSourceLabel || '请选择问题来源'}} ▼</view>
+      </picker>
+    </view>
+    <view class="form-group">
+      <view class="form-label">地址</view>
+      <input class="form-input" placeholder="请输入事发地址" value="{{address}}" bindinput="onInput" data-field="address" />
+    </view>
+    <view class="form-group">
+      <view class="form-label">附件照片</view>
+      <view class="upload-area">
+        <block wx:for="{{images}}" wx:key="*this">
+          <image class="upload-img" src="{{item}}" mode="aspectFill" bindtap="previewImage" data-url="{{item}}" />
+        </block>
+        <view class="upload-btn" wx:if="{{images.length<6}}" bindtap="chooseImage">+</view>
+      </view>
+    </view>
+    <button class="submit-btn" bindtap="submit" loading="{{submitting}}" disabled="{{submitting}}">
+      {{submitting ? '提交中...' : '提 交'}}
+    </button>
+  </view>
+</view>

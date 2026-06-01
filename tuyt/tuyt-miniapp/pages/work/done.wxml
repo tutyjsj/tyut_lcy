@@ -1,0 +1,18 @@
+<!-- 完结件列表 -->
+<view class="container">
+  <view wx:if="{{list.length===0&&!loading}}" class="empty">
+    <text class="empty-text">暂无完结件</text>
+  </view>
+  <view wx:for="{{list}}" wx:key="id" class="card work-card" bindtap="goDetail" data-id="{{item.id}}">
+    <view class="work-header">
+      <text class="work-title ellipsis">{{item.title || '任务'}}</text>
+      <text class="tag tag-success">{{item.statusLabel}}</text>
+    </view>
+    <view class="work-body ellipsis2">{{item.content || item.description || '暂无描述'}}</view>
+    <view class="work-footer">
+      <text>{{item.sourceName || ''}}</text>
+      <text class="work-time">{{item.finishTime || item.createTime || ''}}</text>
+    </view>
+  </view>
+  <view class="loadmore" wx:if="{{list.length>0}}">{{hasMore ? '上拉加载更多' : '已全部加载'}}</view>
+</view>

@@ -1,0 +1,52 @@
+<!-- 企业详情（一企一档） -->
+<view class="container">
+  <view class="card">
+    <view class="ent-header">
+      <text class="ent-title">{{detail.enterpriseName || detail.name || '企业'}}</text>
+      <text class="tag tag-primary">{{detail.superviseTypeLabel}}</text>
+    </view>
+    <view class="detail-grid">
+      <view class="detail-item">
+        <text class="d-label">统一社会信用代码</text>
+        <text class="d-value">{{detail.creditCode || '-'}}</text>
+      </view>
+      <view class="detail-item">
+        <text class="d-label">法人代表</text>
+        <text class="d-value">{{detail.legalPerson || '-'}}</text>
+      </view>
+      <view class="detail-item">
+        <text class="d-label">联系电话</text>
+        <text class="d-value">{{detail.contactPhone || '-'}}</text>
+      </view>
+      <view class="detail-item">
+        <text class="d-label">经营状态</text>
+        <text class="d-value">{{detail.productionStatusLabel}}</text>
+      </view>
+      <view class="detail-item full-width">
+        <text class="d-label">地址</text>
+        <text class="d-value">{{detail.address || '-'}}</text>
+      </view>
+      <view class="detail-item full-width">
+        <text class="d-label">经营范围</text>
+        <text class="d-value">{{detail.businessScope || '-'}}</text>
+      </view>
+      <view class="detail-item full-width" wx:if="{{detail.remark}}">
+        <text class="d-label">备注</text>
+        <text class="d-value">{{detail.remark}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 关联问题 -->
+  <view class="section-title">关联问题</view>
+  <view wx:if="{{problems.length===0}}" class="empty">
+    <text class="empty-text">暂无关联问题</text>
+  </view>
+  <view wx:for="{{problems}}" wx:key="id" class="card p-mini" bindtap="goProblem" data-id="{{item.id}}">
+    <view class="p-mini-row">
+      <text class="p-mini-desc ellipsis">{{item.problemDesc}}</text>
+      <text class="tag {{item.statusClass}}">{{item.statusLabel}}</text>
+    </view>
+    <text class="p-mini-time">{{item.alarmTime}}</text>
+  </view>
+</view>

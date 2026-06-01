@@ -1,0 +1,31 @@
+<!-- 待办列表 -->
+<view class="container">
+  <view class="filter-bar">
+    <view class="filter-tabs">
+      <view class="filter-tab {{status==='all'?'active':''}}" data-status="all" bindtap="switchTab">全部</view>
+      <view class="filter-tab {{status==='PENDING'?'active':''}}" data-status="PENDING" bindtap="switchTab">待处理</view>
+      <view class="filter-tab {{status==='PROCESSING'?'active':''}}" data-status="PROCESSING" bindtap="switchTab">处理中</view>
+    </view>
+  </view>
+
+  <view wx:if="{{list.length===0&&!loading}}" class="empty">
+    <text class="empty-text">暂无待办任务</text>
+  </view>
+
+  <view wx:for="{{list}}" wx:key="id" class="card work-card" bindtap="goDetail" data-id="{{item.id}}" data-type="{{item.taskType}}">
+    <view class="work-header">
+      <text class="work-title ellipsis">{{item.title || '任务'}}</text>
+      <text class="tag {{item.statusClass}}">{{item.statusLabel}}</text>
+    </view>
+    <view class="work-body ellipsis2">{{item.content || item.description || '暂无描述'}}</view>
+    <view class="work-footer">
+      <text class="work-source">{{item.sourceName || item.enterpriseName || ''}}</text>
+      <text class="work-time">{{item.createTime || item.createdTime || ''}}</text>
+    </view>
+    <view class="work-actions" wx:if="{{item.canHandle !== false}}">
+      <button class="btn-done" size="mini" bindtap="handleTask" data-id="{{item.id}}">处理</button>
+    </view>
+  </view>
+
+  <view class="loadmore" wx:if="{{list.length>0}}">{{hasMore ? '上拉加载更多' : '已全部加载'}}</view>
+</view>

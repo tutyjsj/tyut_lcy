@@ -1,0 +1,49 @@
+<!-- 问题详情 -->
+<view class="container">
+  <view class="card">
+    <view class="detail-header">
+      <text class="tag {{detail.statusClass}}">{{detail.statusLabel}}</text>
+      <text class="detail-time">{{detail.alarmTime || detail.createTime}}</text>
+    </view>
+    <view class="detail-desc">{{detail.problemDesc || '无描述'}}</view>
+    <view class="detail-grid">
+      <view class="detail-item">
+        <text class="d-label">事发企业</text>
+        <text class="d-value">{{detail.enterpriseName || '-'}}</text>
+      </view>
+      <view class="detail-item">
+        <text class="d-label">问题等级</text>
+        <text class="d-value">{{detail.levelLabel}}</text>
+      </view>
+      <view class="detail-item">
+        <text class="d-label">污染类型</text>
+        <text class="d-value">{{detail.typeLabel}}</text>
+      </view>
+      <view class="detail-item">
+        <text class="d-label">问题来源</text>
+        <text class="d-value">{{detail.sourceLabel}}</text>
+      </view>
+      <view class="detail-item">
+        <text class="d-label">所属区域</text>
+        <text class="d-value">{{detail.areaName || '-'}}</text>
+      </view>
+      <view class="detail-item">
+        <text class="d-label">地址</text>
+        <text class="d-value">{{detail.address || '-'}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 动态日志 -->
+  <view class="section-title">处理动态</view>
+  <view wx:if="{{logs.length===0}}" class="empty">
+    <text class="empty-text">暂无处理记录</text>
+  </view>
+  <view wx:for="{{logs}}" wx:key="id" class="log-item">
+    <view class="log-dot {{item.type}}"></view>
+    <view class="log-content">
+      <text class="log-text">{{item.content || item.remark || item.description || '无详情'}}</text>
+      <text class="log-time">{{item.createTime || item.createdTime}}</text>
+    </view>
+  </view>
+</view>

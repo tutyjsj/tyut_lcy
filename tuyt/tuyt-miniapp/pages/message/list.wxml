@@ -1,0 +1,20 @@
+<!-- 消息列表 -->
+<view class="container">
+  <view class="msg-actions" wx:if="{{list.length>0}}">
+    <text class="mark-all" bindtap="markAll">全部已读</text>
+  </view>
+  <view wx:if="{{list.length===0&&!loading}}" class="empty">
+    <text class="empty-text">暂无消息</text>
+  </view>
+  <view wx:for="{{list}}" wx:key="id" class="msg-item {{item.isRead?'':'unread'}}" bindtap="readMsg" data-id="{{item.id}}" data-index="{{index}}">
+    <view class="msg-dot" wx:if="{{!item.isRead}}"></view>
+    <view class="msg-body">
+      <view class="msg-header">
+        <text class="msg-title ellipsis">{{item.title || '消息通知'}}</text>
+        <text class="msg-time">{{item.createTime || item.createdTime}}</text>
+      </view>
+      <text class="msg-content ellipsis2">{{item.content || item.description || '暂无内容'}}</text>
+    </view>
+  </view>
+  <view class="loadmore" wx:if="{{list.length>0}}">{{hasMore ? '上拉加载更多' : '已全部加载'}}</view>
+</view>

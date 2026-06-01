@@ -1,0 +1,61 @@
+<!-- 个人中心 -->
+<view class="container">
+  <!-- 用户信息区 -->
+  <view class="profile-header">
+    <view class="avatar">👤</view>
+    <view class="user-text">
+      <text class="user-name">{{userInfo.realName || userInfo.username || '用户'}}</text>
+      <text class="user-role">{{roleName}}</text>
+    </view>
+  </view>
+
+  <!-- 菜单列表 -->
+  <view class="menu-section">
+    <view class="menu-item" bindtap="goTodo">
+      <text class="menu-icon">📋</text>
+      <text class="menu-text">我的待办</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="goTransfer">
+      <text class="menu-icon">📤</text>
+      <text class="menu-text">运转件</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="goDone">
+      <text class="menu-icon">✅</text>
+      <text class="menu-text">完结件</text>
+      <text class="menu-arrow">›</text>
+    </view>
+  </view>
+
+  <view class="menu-section">
+    <view class="menu-item" bindtap="goEnterprises">
+      <text class="menu-icon">🏭</text>
+      <text class="menu-text">企业查询</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="goContacts">
+      <text class="menu-icon">📞</text>
+      <text class="menu-text">通讯录</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="goPatrol">
+      <text class="menu-icon">🔍</text>
+      <text class="menu-text">巡查计划</text>
+      <text class="menu-arrow">›</text>
+    </view>
+  </view>
+
+  <view class="menu-section">
+    <view class="menu-item" bindtap="goAbout">
+      <text class="menu-icon">ℹ️</text>
+      <text class="menu-text">关于系统</text>
+      <text class="menu-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 退出按钮 -->
+  <view class="logout-area">
+    <button class="logout-btn" bindtap="handleLogout">退出登录</button>
+  </view>
+</view>

@@ -1,0 +1,46 @@
+<!-- 任务详情 -->
+<view class="container">
+  <view class="card">
+    <view class="detail-header">
+      <text class="tag {{detail.statusClass}}">{{detail.statusLabel}}</text>
+      <text class="detail-time">{{detail.createTime}}</text>
+    </view>
+    <view class="detail-title">{{detail.title || '任务'}}</view>
+    <view class="detail-body">{{detail.content || detail.remark || '暂无详情'}}</view>
+    <view class="detail-grid">
+      <view class="detail-item">
+        <text class="d-label">任务类型</text>
+        <text class="d-value">{{detail.taskType || '-'}}</text>
+      </view>
+      <view class="detail-item">
+        <text class="d-label">紧急程度</text>
+        <text class="d-value tag tag-danger" wx:if="{{detail.urgency==='CRITICAL'}}">特急</text>
+        <text class="d-value tag tag-warning" wx:elif="{{detail.urgency==='URGENT'||detail.urgency==='HIGH'}}">紧急</text>
+        <text class="d-value tag tag-info" wx:else>一般</text>
+      </view>
+      <view class="detail-item">
+        <text class="d-label">截止时间</text>
+        <text class="d-value">{{detail.deadline || '-'}}</text>
+      </view>
+      <view class="detail-item">
+        <text class="d-label">派发人</text>
+        <text class="d-value">{{detail.dispatchByName || '-'}}</text>
+      </view>
+      <view class="detail-item">
+        <text class="d-label">接收人</text>
+        <text class="d-value">{{detail.receiverName || '-'}}</text>
+      </view>
+      <view class="detail-item">
+        <text class="d-label">关联问题</text>
+        <text class="d-value link" bindtap="goProblem" wx:if="{{detail.problemId}}">查看问题</text>
+        <text class="d-value" wx:else>-</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="action-area" wx:if="{{canOperate}}">
+    <button class="action-btn primary" bindtap="handleProcess">签收处理</button>
+    <button class="action-btn warn" bindtap="handleReturn">退回任务</button>
+  </view>
+</view>

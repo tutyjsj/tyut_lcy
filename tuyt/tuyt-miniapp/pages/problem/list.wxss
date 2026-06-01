@@ -1,0 +1,91 @@
+/* 问题列表 */
+.search-bar {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: #fff;
+  gap: 10px;
+}
+.search-input-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 0 12px;
+  height: 36px;
+}
+.search-icon { font-size: 14px; margin-right: 6px; }
+.search-input { flex: 1; font-size: 14px; }
+.search-filter {
+  color: #1890FF;
+  font-size: 14px;
+  padding: 0 8px;
+}
+.filter-panel {
+  background: #fff;
+  padding: 12px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.filter-item {
+  background: #f5f5f5;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  color: #666;
+}
+.filter-apply {
+  background: #1890FF;
+  color: #fff;
+  font-size: 13px;
+  height: 32px;
+  line-height: 32px;
+  padding: 0 16px;
+  border-radius: 6px;
+  border: none;
+}
+.report-btn-area { padding: 12px 16px; }
+.report-btn {
+  width: 100%;
+  background: #E6F7FF;
+  color: #1890FF;
+  border: 1px dashed #91D5FF;
+  border-radius: 8px;
+  font-size: 14px;
+  height: 40px;
+  line-height: 40px;
+}
+
+.problem-card {
+  margin: 0 16px 10px;
+  padding: 14px;
+}
+.p-row1 {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+.p-desc {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  margin-right: 8px;
+}
+.p-row2 {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.p-row3 {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #999;
+}
+.p-enterprise { max-width: 60%; }
+.p-time { white-space: nowrap; }

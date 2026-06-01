@@ -1,0 +1,59 @@
+/* 待办列表 */
+.filter-bar { background: #fff; padding: 0 16px; border-bottom: 1px solid #f0f0f0; }
+.filter-tabs { display: flex; gap: 24px; }
+.filter-tab {
+  font-size: 14px;
+  color: #666;
+  padding: 12px 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.filter-tab.active {
+  color: #1890FF;
+  font-weight: 500;
+  border-bottom-color: #1890FF;
+}
+
+.work-card {
+  padding: 16px;
+  margin: 10px 16px;
+}
+.work-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+.work-title {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 500;
+  color: #333;
+  margin-right: 8px;
+}
+.work-body {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+.work-footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #999;
+}
+.work-actions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.btn-done {
+  background: #E6F7FF;
+  color: #1890FF;
+  border: 1px solid #91D5FF;
+  border-radius: 4px;
+  font-size: 12px;
+  padding: 4px 12px;
+}

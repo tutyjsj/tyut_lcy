@@ -1,0 +1,17 @@
+/* 消息列表 */
+.msg-actions { text-align: right; padding: 12px 16px 0; }
+.mark-all { font-size: 13px; color: #1890FF; }
+.msg-item {
+  display: flex; align-items: flex-start; padding: 14px 16px;
+  background: #fff; margin: 6px 0; gap: 10px;
+}
+.msg-item.unread { background: #F0F8FF; }
+.msg-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: #1890FF;
+  margin-top: 6px; flex-shrink: 0;
+}
+.msg-body { flex: 1; }
+.msg-header { display: flex; justify-content: space-between; margin-bottom: 4px; }
+.msg-title { font-size: 14px; color: #333; font-weight: 500;flex:1;margin-right:8px; }
+.msg-time { font-size: 11px; color: #bbb; white-space: nowrap; }
+.msg-content { font-size: 13px; color: #999; line-height: 1.4; }

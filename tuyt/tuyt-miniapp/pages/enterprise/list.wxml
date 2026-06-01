@@ -1,0 +1,25 @@
+<!-- 企业列表 -->
+<view class="container">
+  <view class="search-bar">
+    <view class="search-input-container">
+      <text class="search-icon">🔍</text>
+      <input class="search-input" placeholder="搜索企业名称" value="{{keyword}}" bindinput="onKeyword" />
+    </view>
+    <view class="search-btn" bindtap="search">搜索</view>
+  </view>
+  <view wx:if="{{list.length===0&&!loading}}" class="empty">
+    <text class="empty-text">暂无企业数据</text>
+  </view>
+  <view wx:for="{{list}}" wx:key="id" class="card ent-card" bindtap="goDetail" data-id="{{item.id}}">
+    <view class="ent-name">{{item.enterpriseName || item.name}}</view>
+    <view class="ent-row">
+      <text class="ent-tag tag tag-primary">{{item.superviseTypeLabel || '普通'}}</text>
+      <text class="ent-status">{{item.productionStatusLabel || '正常生产'}}</text>
+    </view>
+    <view class="ent-info">
+      <text>法人：{{item.legalPerson || '-'}}</text>
+      <text>地址：{{item.address || '-'}}</text>
+    </view>
+  </view>
+  <view class="loadmore" wx:if="{{list.length>0}}">{{hasMore ? '上拉加载更多' : '已全部加载'}}</view>
+</view>
